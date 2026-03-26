@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dreamflow — Canvas ↔ Code</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f5f4f0;--bg2:#fff;--text:#111;--text2:#555;--text3:#888;
+  --border:#e0ddd5;--accent:#6c63ff;--accent2:#4f46e5;--nav-h:60px;
+  --font:'Inter',system-ui,sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;padding:0 2rem;gap:2rem}
+.logo{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}
+.logo-icon{width:22px;height:22px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:14px;height:14px;fill:#fff}
+nav .links{display:flex;gap:1.5rem;flex:1;margin-left:1rem}
+nav .links a{font-size:14px;color:var(--text2);text-decoration:none;cursor:pointer}
+nav .links a:hover{color:var(--text)}
+.nav-right{display:flex;gap:10px;align-items:center;margin-left:auto}
+.btn-outline{padding:7px 16px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:14px;cursor:pointer;font-family:var(--font)}
+.btn-solid{padding:7px 16px;border:1px solid #111;border-radius:8px;background:#111;color:#fff;font-size:14px;cursor:pointer;font-family:var(--font)}
+.btn-outline:hover{background:var(--bg)}
+.btn-solid:hover{background:#333}
+#hero{text-align:center;padding:5rem 2rem 3rem;max-width:900px;margin:0 auto}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#e8e6ff;border-radius:999px;font-size:13px;color:var(--accent2);margin-bottom:1.5rem}
+.badge-icon{width:16px;height:16px;background:var(--accent);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700}
+h1{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:700;letter-spacing:-1.5px;line-height:1.05;margin-bottom:1.25rem}
+.subtitle{font-size:16px;color:var(--text2);margin-bottom:2rem;max-width:500px;margin-left:auto;margin-right:auto}
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.hero-btns .btn-solid{padding:10px 24px;font-size:15px}
+.hero-btns .btn-ghost{padding:10px 24px;font-size:15px;background:transparent;border:none;cursor:pointer;font-family:var(--font);color:var(--text2)}
+#preview-wrap{max-width:960px;margin:2rem auto 0;padding:0 2rem}
+.mock-shell{background:#e8e6e0;border-radius:14px;padding:10px;border:1px solid var(--border)}
+.mock-bar{background:#f0efe9;border-radius:8px 8px 0 0;display:flex;align-items:center;padding:8px 12px;gap:8px;border-bottom:1px solid var(--border)}
+.mock-dot{width:10px;height:10px;border-radius:50%}
+.mock-tabs{display:flex;gap:2px;margin-left:1rem}
+.mock-tab{padding:3px 10px;font-size:11px;border-radius:4px;cursor:pointer;color:var(--text3);font-family:var(--font)}
+.mock-tab.active{background:#fff;color:var(--text);border:1px solid var(--border)}
+.mock-body{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:0 0 8px 8px;overflow:hidden;min-height:220px}
+.mock-canvas{background:#fff;padding:1rem;display:flex;flex-direction:column;gap:8px}
+.mock-code{background:#1e1e2e;padding:1rem;font-family:'Courier New',monospace;font-size:11px;color:#cdd6f4;overflow:hidden}
+.mc-widget{background:#f8f7f4;border:1px solid var(--border);border-radius:6px;padding:8px 10px}
+.mc-widget-title{font-size:11px;font-weight:600;color:var(--text3);margin-bottom:4px}
+.mc-bar{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--accent),#a5b4fc);width:60%}
+.code-line{margin-bottom:2px;white-space:nowrap}
+.ck{color:#cba6f7}.cs{color:#a6e3a1}.cn{color:#fab387}.cc{color:#6c7086}
+#features{max-width:960px;margin:4rem auto;padding:0 2rem}
+.section-label{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem}
+.section-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.5px;margin-bottom:2rem}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.feat-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.5rem}
+.feat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:1rem}
+.feat-title{font-weight:600;font-size:15px;margin-bottom:.5rem}
+.feat-desc{font-size:14px;color:var(--text2);line-height:1.6}
+#pricing{max-width:900px;margin:4rem auto;padding:0 2rem;text-align:center}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:2rem;text-align:left}
+.price-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.5rem}
+.price-card.popular{border:2px solid var(--accent);position:relative}
+.popular-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11px;padding:2px 12px;border-radius:999px;white-space:nowrap}
+.plan-name{font-weight:600;font-size:14px;margin-bottom:.5rem;color:var(--text2)}
+.plan-price{font-size:2rem;font-weight:700;letter-spacing:-1px}
+.plan-price span{font-size:14px;font-weight:400;color:var(--text2)}
+.plan-desc{font-size:13px;color:var(--text2);margin:8px 0 1rem}
+.plan-btn{width:100%;padding:8px;border-radius:8px;font-size:14px;font-family:var(--font);cursor:pointer;font-weight:500}
+.plan-btn.outline{background:#fff;border:1px solid var(--border)}
+.plan-btn.solid{background:#111;color:#fff;border:none}
+.plan-feature{font-size:13px;color:var(--text2);padding:4px 0;border-bottom:1px solid #f0efe9;display:flex;gap:6px;align-items:center}
+.plan-feature:last-child{border:none}
+.check{color:var(--accent);font-weight:700;font-size:12px}
+footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:13px;color:var(--text3);margin-top:4rem}
+#admin-gate{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.5);align-items:center;justify-content:center}
+#admin-gate.show{display:flex}
+.gate-box{background:#fff;border-radius:16px;padding:2rem;max-width:360px;width:90%;border:1px solid var(--border)}
+.gate-box h3{font-size:16px;font-weight:600;margin-bottom:.4rem}
+.gate-box p{font-size:13px;color:var(--text2);margin-bottom:1.2rem}
+.gate-input{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;font-family:var(--font);margin-bottom:8px}
+.gate-input:focus{outline:none;border-color:#999}
+.gate-err{font-size:12px;color:#e24b4a;margin-bottom:8px;display:none}
+.gate-btns{display:flex;gap:8px}
+.gate-btns button{flex:1;padding:9px;border-radius:8px;font-size:14px;font-family:var(--font);cursor:pointer}
+#agent-toggle{display:none;position:fixed;bottom:24px;right:24px;z-index:200;width:52px;height:52px;border-radius:50%;background:#111;color:#fff;border:none;font-size:22px;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+#agent-panel{position:fixed;bottom:88px;right:24px;z-index:200;width:360px;max-height:520px;background:#fff;border:1px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.15);transform:translateY(20px) scale(.95);opacity:0;pointer-events:none;transition:all .2s ease}
+#agent-panel.open{transform:translateY(0) scale(1);opacity:1;pointer-events:all}
+.agent-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.agent-avatar{width:32px;height:32px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0}
+.agent-info h3{font-size:14px;font-weight:600;margin:0}
+.agent-info p{font-size:11px;color:var(--text3);margin:0}
+.admin-badge{margin-left:auto;background:#eeedfe;color:var(--accent2);font-size:11px;padding:2px 10px;border-radius:999px;font-weight:600}
+#chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:0}
+.msg{max-width:85%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.5}
+.msg.user{background:#111;color:#fff;align-self:flex-end;border-radius:12px 12px 2px 12px}
+.msg.agent{background:#f5f4f0;color:var(--text);align-self:flex-start;border-radius:2px 12px 12px 12px;border:1px solid var(--border)}
+.agent-input-area{padding:10px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end}
+#agent-input{flex:1;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:13px;font-family:var(--font);resize:none;min-height:36px;max-height:80px;background:#fff;color:var(--text)}
+#agent-input:focus{outline:none;border-color:#999}
+#agent-send{width:36px;height:36px;border-radius:10px;background:#111;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.suggestions{display:flex;flex-wrap:wrap;gap:4px;padding:0 12px 8px}
+.sug{padding:4px 10px;border-radius:999px;border:1px solid var(--border);font-size:11px;background:#fff;cursor:pointer;font-family:var(--font);color:var(--text2)}
+.sug:hover{background:var(--bg)}
+@media(max-width:600px){#agent-panel{width:calc(100vw - 32px);right:16px}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">
+    <div class="logo-icon"><svg viewBox="0 0 14 14"><path d="M2 2h4v4H2zm6 0h4v4H8zM2 8h4v4H2zm6 0h4v4H8z"/></svg></div>
+    <span id="site-name">dreamflow</span>
+  </div>
+  <div class="links">
+    <a onclick="scrollSec('features')">Features</a>
+    <a>How it works</a>
+    <a>Enterprise</a>
+    <a>Showcase</a>
+    <a onclick="scrollSec('pricing')">Pricing</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-outline">Login</button>
+    <button class="btn-solid">Get Started</button>
+  </div>
+</nav>
+<section id="hero">
+  <div class="badge"><span class="badge-icon">≡≡</span> <span id="badge-text">Introducing Local Run</span></div>
+  <h1 id="hero-title">Canvas↔ Code,<br>seamlessly synced</h1>
+  <p class="subtitle" id="hero-subtitle">Agentic, Visual, Code. No install, no lock-in, production-ready workflows.</p>
+  <div class="hero-btns">
+    <button class="btn-solid" id="hero-cta">Start Building</button>
+    <button class="btn-ghost" id="hero-secondary">Watch Quick Tutorial →</button>
+  </div>
+</section>
+<div id="preview-wrap">
+  <div class="mock-shell">
+    <div class="mock-bar">
+      <div class="mock-dot" style="background:#ff5f57"></div>
+      <div class="mock-dot" style="background:#ffbd2e"></div>
+      <div class="mock-dot" style="background:#27c93f"></div>
+      <div class="mock-tabs">
+        <div class="mock-tab active">Preview</div>
+        <div class="mock-tab">Code</div>
+        <div class="mock-tab">Split</div>
+      </div>
+      <div style="margin-left:auto;font-size:11px;color:#999;font-family:monospace">dashboard_new</div>
+    </div>
+    <div class="mock-body">
+      <div class="mock-canvas">
+        <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:4px">Acme Inc. — Dashboard</div>
+        <div class="mc-widget">
+          <div class="mc-widget-title">Total Revenue</div>
+          <div style="font-size:18px;font-weight:700">$48,291</div>
+          <div class="mc-bar" style="margin-top:6px"></div>
+        </div>
+        <div class="mc-widget">
+          <div class="mc-widget-title">Subscriptions</div>
+          <div style="font-size:18px;font-weight:700">1,204</div>
+          <div class="mc-bar" style="width:40%;background:linear-gradient(90deg,#1D9E75,#9FE1CB);margin-top:6px"></div>
+        </div>
+      </div>
+      <div class="mock-code">
+        <div class="code-line"><span class="cc">// chart_card.dart</span></div>
+        <div class="code-line"><span class="ck">class</span> <span class="cs">ChartCard</span> <span class="cn">extends</span> <span class="cs">Widget</span> {</div>
+        <div class="code-line">  <span class="ck">final</span> blurRadius: <span class="cn">1</span>,</div>
+        <div class="code-line">  offset: <span class="ck">const</span> Offset(<span class="cn">0</span>, <span class="cn">1</span>),</div>
+        <div class="code-line">  contentStyle: FCardContentStyle(</div>
+        <div class="code-line">    <span class="ck">backgroundColor</span>: <span class="cs">Colors.white</span>,</div>
+        <div class="code-line">    borderRadius: <span class="cn">12</span>,</div>
+        <div class="code-line">  ),</div>
+        <div class="code-line">}</div>
+      </div>
+    </div>
+  </div>
+</div>
+<section id="features">
+  <div class="section-label">Features</div>
+  <h2 class="section-title" id="features-title">Everything you need to ship faster</h2>
+  <div class="feature-grid" id="feature-grid">
+    <div class="feat-card"><div class="feat-icon" style="background:#eeedfe">🎨</div><div class="feat-title">Visual Canvas</div><div class="feat-desc">Design with drag-and-drop. Every change syncs to real code in real time.</div></div>
+    <div class="feat-card"><div class="feat-icon" style="background:#e1f5ee">⚡</div><div class="feat-title">Agentic Workflows</div><div class="feat-desc">AI agents handle repetitive patterns so your team focuses on user experience.</div></div>
+    <div class="feat-card"><div class="feat-icon" style="background:#faeeda">🔒</div><div class="feat-title">No Lock-in</div><div class="feat-desc">Your code is yours. Export to any framework. No proprietary formats.</div></div>
+    <div class="feat-card"><div class="feat-icon" style="background:#faece7">🚀</div><div class="feat-title">Production Ready</div><div class="feat-desc">Ship directly from the canvas. Built-in CI/CD and one-click publish.</div></div>
+    <div class="feat-card"><div class="feat-icon" style="background:#e6f1fb">🤝</div><div class="feat-title">Team Collaboration</div><div class="feat-desc">Multiplayer editing, comments, and version history — like Figma for code.</div></div>
+    <div class="feat-card"><div class="feat-icon" style="background:#eaf3de">🌐</div><div class="feat-title">Any Framework</div><div class="feat-desc">React, Vue, Flutter, Next.js — Dreamflow outputs idiomatic code.</div></div>
+  </div>
+</section>
+<section id="pricing">
+  <div class="section-label" style="text-align:center">Pricing</div>
+  <h2 class="section-title" id="pricing-title">Simple, transparent pricing</h2>
+  <div class="pricing-grid" id="pricing-grid">
+    <div class="price-card">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">$0<span>/mo</span></div>
+      <div class="plan-desc">For personal projects and exploration.</div>
+      <button class="plan-btn outline" style="margin-bottom:1rem">Get started free</button>
+      <div class="plan-feature"><span class="check">✓</span> 3 projects</div>
+      <div class="plan-feature"><span class="check">✓</span> 5GB storage</div>
+      <div class="plan-feature"><span class="check">✓</span> Community support</div>
+    </div>
+    <div class="price-card popular">
+      <div class="popular-badge">Most popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">$29<span>/mo</span></div>
+      <div class="plan-desc">For teams shipping production apps.</div>
+      <button class="plan-btn solid" style="margin-bottom:1rem">Start free trial</button>
+      <div class="plan-feature"><span class="check">✓</span> Unlimited projects</div>
+      <div class="plan-feature"><span class="check">✓</span> 50GB storage</div>
+      <div class="plan-feature"><span class="check">✓</span> Priority support</div>
+      <div class="plan-feature"><span class="check">✓</span> Team collaboration</div>
+      <div class="plan-feature"><span class="check">✓</span> Custom domains</div>
+    </div>
+    <div class="price-card">
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-price">Custom</div>
+      <div class="plan-desc">For large teams with advanced needs.</div>
+      <button class="plan-btn outline" style="margin-bottom:1rem">Contact sales</button>
+      <div class="plan-feature"><span class="check">✓</span> Everything in Pro</div>
+      <div class="plan-feature"><span class="check">✓</span> SSO & SAML</div>
+      <div class="plan-feature"><span class="check">✓</span> Dedicated support</div>
+      <div class="plan-feature"><span class="check">✓</span> SLA guarantee</div>
+    </div>
+  </div>
+</section>
+<footer>
+  <p>© 2026 <span id="footer-name">Dreamflow</span>. All rights reserved. · <a href="#" style="color:var(--text3)">Privacy</a> · <a href="#" style="color:var(--text3)">Terms</a></p>
+</footer>
+<div id="admin-gate">
+  <div class="gate-box">
+    <h3>Admin access</h3>
+    <p>Enter your admin password to unlock the site editor agent.</p>
+    <input class="gate-input" type="password" id="gate-pw" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
+    <div class="gate-err" id="gate-err">Incorrect password. Try again.</div>
+    <div class="gate-btns">
+      <button style="background:#fff;border:1px solid var(--border)" onclick="closeGate()">Cancel</button>
+      <button style="background:#111;color:#fff;border:none" onclick="checkPw()">Unlock</button>
+    </div>
+  </div>
+</div>
+<button id="agent-toggle" title="Site Editor Agent">✦</button>
+<div id="agent-panel">
+  <div class="agent-header">
+    <div class="agent-avatar">A</div>
+    <div class="agent-info"><h3>Site Editor Agent</h3><p>Admin mode — edit anything on the site</p></div>
+    <span class="admin-badge">Admin</span>
+  </div>
+  <div id="chat-msgs">
+    <div class="msg agent">Welcome, admin! I can edit any part of this site. What would you like to change?</div>
+  </div>
+  <div class="suggestions" id="suggestions">
+    <button class="sug" onclick="quickSend('Change the hero headline')">Change headline</button>
+    <button class="sug" onclick="quickSend('Update the Pro plan price to $49/mo')">Edit pricing</button>
+    <button class="sug" onclick="quickSend('Add a new feature card about analytics')">Add feature</button>
+    <button class="sug" onclick="quickSend('Switch to a dark color theme')">Dark theme</button>
+  </div>
+  <div class="agent-input-area">
+    <textarea id="agent-input" placeholder="Tell me what to change…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button id="agent-send" onclick="sendMessage()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+<script>
+const ADMIN_PASSWORD = 'dreamflow2026';
+const API = 'https://api.anthropic.com/v1/messages';
+let panelOpen=false,adminUnlocked=false,history=[];
+let konamiBuffer=[];
+document.addEventListener('keydown',e=>{
+  konamiBuffer.push(e.key);
+  konamiBuffer=konamiBuffer.slice(-6);
+  if(konamiBuffer.join(',')===['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight'].join(','))openGate();
+});
+let footerClicks=0,footerTimer;
+document.querySelector('footer').addEventListener('click',()=>{
+  footerClicks++;clearTimeout(footerTimer);
+  footerTimer=setTimeout(()=>footerClicks=0,600);
+  if(footerClicks>=3)openGate();
+});
+function openGate(){if(adminUnlocked)return;document.getElementById('admin-gate').classList.add('show');setTimeout(()=>document.getElementById('gate-pw').focus(),100)}
+function closeGate(){document.getElementById('admin-gate').classList.remove('show');document.getElementById('gate-pw').value='';document.getElementById('gate-err').style.display='none'}
+function checkPw(){
+  if(document.getElementById('gate-pw').value===ADMIN_PASSWORD){adminUnlocked=true;closeGate();unlockAdmin();}
+  else{document.getElementById('gate-err').style.display='block';document.getElementById('gate-pw').value='';}
+}
+function unlockAdmin(){
+  const t=document.getElementById('agent-toggle');t.style.display='flex';panelOpen=true;
+  document.getElementById('agent-panel').classList.add('open');t.textContent='×';
+  t.onclick=()=>{panelOpen=!panelOpen;document.getElementById('agent-panel').classList.toggle('open',panelOpen);t.textContent=panelOpen?'×':'✦'};
+}
+const SYSTEM=`You are a site editor agent for Dreamflow. When asked to change something, reply briefly AND output a JSON block: {"actions":[...]}
+Action types: setText(id,value), setHTML(id,value), setStyle(id,property,value), addFeature(title,desc,emoji,color), theme(value:"dark"/"light")
+IDs: site-name,badge-text,hero-title,hero-subtitle,hero-cta,hero-secondary,features-title,feature-grid,pricing-title,pricing-grid,footer-name`;
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px'}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}}
+function quickSend(t){document.getElementById('agent-input').value=t;sendMessage()}
+function addMsg(text,role,thinking=false){
+  const msgs=document.getElementById('chat-msgs');
+  const d=document.createElement('div');d.className='msg '+role+(thinking?' thinking':'');d.textContent=text;
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;
+}
+function applyActions(actions){
+  actions.forEach(a=>{
+    if(a.type==='setText'){const el=document.getElementById(a.id);if(el)el.textContent=a.value}
+    else if(a.type==='setHTML'){const el=document.getElementById(a.id);if(el)el.innerHTML=a.value}
+    else if(a.type==='setStyle'){if(a.id==='root')document.documentElement.style.setProperty(a.property,a.value);else{const el=document.getElementById(a.id);if(el)el.style[a.property]=a.value}}
+    else if(a.type==='addFeature'){const g=document.getElementById('feature-grid');const c=document.createElement('div');c.className='feat-card';c.innerHTML=`<div class="feat-icon" style="background:${a.color||'#eeedfe'}">${a.emoji||'✨'}</div><div class="feat-title">${a.title}</div><div class="feat-desc">${a.desc}</div>`;g.appendChild(c)}
+    else if(a.type==='theme'){if(a.value==='dark'){document.documentElement.style.setProperty('--bg','#111');document.documentElement.style.setProperty('--text','#f0f0f0');document.documentElement.style.setProperty('--text2','#aaa');document.documentElement.style.setProperty('--border','#2a2a2a');document.querySelectorAll('.feat-card,.price-card').forEach(el=>{el.style.background='#1a1a1a';el.style.borderColor='#333'});document.querySelector('nav').style.background='#111'}}
+  });
+}
+async function sendMessage(){
+  const input=document.getElementById('agent-input');const text=input.value.trim();if(!text)return;
+  input.value='';input.style.height='auto';document.getElementById('suggestions').style.display='none';
+  addMsg(text,'user');history.push({role:'user',content:text});
+  const thinking=addMsg('Thinking…','agent',true);
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:history})});
+    const data=await res.json();const reply=data.content?.[0]?.text||'Sorry, something went wrong.';
+    thinking.remove();
+    const m=reply.match(/\{[\s\S]*?"actions"[\s\S]*?\}/);let display=reply;
+    if(m){display=reply.replace(m[0],'').trim();try{const p=JSON.parse(m[0]);if(p.actions)applyActions(p.actions)}catch(e){}}
+    addMsg(display||'Done!','agent');history.push({role:'assistant',content:reply});
+  }catch(e){thinking.remove();addMsg('Connection error. Please try again.','agent')}
+}
+function scrollSec(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
+if(new URLSearchParams(location.search).get('admin')==='true')openGate();
+</script>
+</body>
+</html>

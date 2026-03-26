@@ -1,326 +1,688 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dreamflow — Canvas ↔ Code</title>
+<title>Dreamflow - Visual AI Builder for Production Mobile Apps</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#f5f4f0;--bg2:#fff;--text:#111;--text2:#555;--text3:#888;
-  --border:#e0ddd5;--accent:#6c63ff;--accent2:#4f46e5;--nav-h:60px;
-  --font:'Inter',system-ui,sans-serif;
+html{scroll-behavior:smooth}
+
+[data-theme="light"]{
+  --bg:#f7f6f2;--bg2:#fff;--bg3:#f0efe9;--text:#111;--text2:#555;--text3:#999;
+  --border:#e5e2d9;--card:#fff;--nav-bg:rgba(247,246,242,.95);
+  --how-bg:#fff;--trust-bg:#fff;--pricing-bg:#fff;
+  --mock-outer:#e8e6df;--mock-inner:#fff;--mock-code:#1e1e2e;
+  --widget-bg:#f5f4f0;--widget-border:#e5e2d9;
+  --shadow:rgba(0,0,0,.06);
 }
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
-nav{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);height:var(--nav-h);display:flex;align-items:center;padding:0 2rem;gap:2rem}
-.logo{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}
-.logo-icon{width:22px;height:22px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center}
-.logo-icon svg{width:14px;height:14px;fill:#fff}
-nav .links{display:flex;gap:1.5rem;flex:1;margin-left:1rem}
-nav .links a{font-size:14px;color:var(--text2);text-decoration:none;cursor:pointer}
-nav .links a:hover{color:var(--text)}
-.nav-right{display:flex;gap:10px;align-items:center;margin-left:auto}
-.btn-outline{padding:7px 16px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:14px;cursor:pointer;font-family:var(--font)}
-.btn-solid{padding:7px 16px;border:1px solid #111;border-radius:8px;background:#111;color:#fff;font-size:14px;cursor:pointer;font-family:var(--font)}
-.btn-outline:hover{background:var(--bg)}
-.btn-solid:hover{background:#333}
-#hero{text-align:center;padding:5rem 2rem 3rem;max-width:900px;margin:0 auto}
-.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:#e8e6ff;border-radius:999px;font-size:13px;color:var(--accent2);margin-bottom:1.5rem}
-.badge-icon{width:16px;height:16px;background:var(--accent);border-radius:3px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700}
-h1{font-size:clamp(2.5rem,6vw,4.5rem);font-weight:700;letter-spacing:-1.5px;line-height:1.05;margin-bottom:1.25rem}
-.subtitle{font-size:16px;color:var(--text2);margin-bottom:2rem;max-width:500px;margin-left:auto;margin-right:auto}
-.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.hero-btns .btn-solid{padding:10px 24px;font-size:15px}
-.hero-btns .btn-ghost{padding:10px 24px;font-size:15px;background:transparent;border:none;cursor:pointer;font-family:var(--font);color:var(--text2)}
-#preview-wrap{max-width:960px;margin:2rem auto 0;padding:0 2rem}
-.mock-shell{background:#e8e6e0;border-radius:14px;padding:10px;border:1px solid var(--border)}
-.mock-bar{background:#f0efe9;border-radius:8px 8px 0 0;display:flex;align-items:center;padding:8px 12px;gap:8px;border-bottom:1px solid var(--border)}
-.mock-dot{width:10px;height:10px;border-radius:50%}
-.mock-tabs{display:flex;gap:2px;margin-left:1rem}
-.mock-tab{padding:3px 10px;font-size:11px;border-radius:4px;cursor:pointer;color:var(--text3);font-family:var(--font)}
-.mock-tab.active{background:#fff;color:var(--text);border:1px solid var(--border)}
-.mock-body{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border-radius:0 0 8px 8px;overflow:hidden;min-height:220px}
-.mock-canvas{background:#fff;padding:1rem;display:flex;flex-direction:column;gap:8px}
-.mock-code{background:#1e1e2e;padding:1rem;font-family:'Courier New',monospace;font-size:11px;color:#cdd6f4;overflow:hidden}
-.mc-widget{background:#f8f7f4;border:1px solid var(--border);border-radius:6px;padding:8px 10px}
-.mc-widget-title{font-size:11px;font-weight:600;color:var(--text3);margin-bottom:4px}
-.mc-bar{height:8px;border-radius:4px;background:linear-gradient(90deg,var(--accent),#a5b4fc);width:60%}
-.code-line{margin-bottom:2px;white-space:nowrap}
-.ck{color:#cba6f7}.cs{color:#a6e3a1}.cn{color:#fab387}.cc{color:#6c7086}
-#features{max-width:960px;margin:4rem auto;padding:0 2rem}
-.section-label{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem}
-.section-title{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:700;letter-spacing:-0.5px;margin-bottom:2rem}
-.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-.feat-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.5rem}
-.feat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:1rem}
-.feat-title{font-weight:600;font-size:15px;margin-bottom:.5rem}
-.feat-desc{font-size:14px;color:var(--text2);line-height:1.6}
-#pricing{max-width:900px;margin:4rem auto;padding:0 2rem;text-align:center}
-.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:2rem;text-align:left}
-.price-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.5rem}
-.price-card.popular{border:2px solid var(--accent);position:relative}
-.popular-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11px;padding:2px 12px;border-radius:999px;white-space:nowrap}
-.plan-name{font-weight:600;font-size:14px;margin-bottom:.5rem;color:var(--text2)}
-.plan-price{font-size:2rem;font-weight:700;letter-spacing:-1px}
-.plan-price span{font-size:14px;font-weight:400;color:var(--text2)}
-.plan-desc{font-size:13px;color:var(--text2);margin:8px 0 1rem}
-.plan-btn{width:100%;padding:8px;border-radius:8px;font-size:14px;font-family:var(--font);cursor:pointer;font-weight:500}
-.plan-btn.outline{background:#fff;border:1px solid var(--border)}
-.plan-btn.solid{background:#111;color:#fff;border:none}
-.plan-feature{font-size:13px;color:var(--text2);padding:4px 0;border-bottom:1px solid #f0efe9;display:flex;gap:6px;align-items:center}
-.plan-feature:last-child{border:none}
-.check{color:var(--accent);font-weight:700;font-size:12px}
-footer{border-top:1px solid var(--border);padding:2rem;text-align:center;font-size:13px;color:var(--text3);margin-top:4rem}
-#admin-gate{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.5);align-items:center;justify-content:center}
-#admin-gate.show{display:flex}
-.gate-box{background:#fff;border-radius:16px;padding:2rem;max-width:360px;width:90%;border:1px solid var(--border)}
-.gate-box h3{font-size:16px;font-weight:600;margin-bottom:.4rem}
-.gate-box p{font-size:13px;color:var(--text2);margin-bottom:1.2rem}
-.gate-input{width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;font-family:var(--font);margin-bottom:8px}
-.gate-input:focus{outline:none;border-color:#999}
-.gate-err{font-size:12px;color:#e24b4a;margin-bottom:8px;display:none}
-.gate-btns{display:flex;gap:8px}
-.gate-btns button{flex:1;padding:9px;border-radius:8px;font-size:14px;font-family:var(--font);cursor:pointer}
-#agent-toggle{display:none;position:fixed;bottom:24px;right:24px;z-index:200;width:52px;height:52px;border-radius:50%;background:#111;color:#fff;border:none;font-size:22px;cursor:pointer;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.3)}
-#agent-panel{position:fixed;bottom:88px;right:24px;z-index:200;width:360px;max-height:520px;background:#fff;border:1px solid var(--border);border-radius:16px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.15);transform:translateY(20px) scale(.95);opacity:0;pointer-events:none;transition:all .2s ease}
-#agent-panel.open{transform:translateY(0) scale(1);opacity:1;pointer-events:all}
-.agent-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.agent-avatar{width:32px;height:32px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0}
-.agent-info h3{font-size:14px;font-weight:600;margin:0}
-.agent-info p{font-size:11px;color:var(--text3);margin:0}
-.admin-badge{margin-left:auto;background:#eeedfe;color:var(--accent2);font-size:11px;padding:2px 10px;border-radius:999px;font-weight:600}
-#chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:0}
-.msg{max-width:85%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.5}
-.msg.user{background:#111;color:#fff;align-self:flex-end;border-radius:12px 12px 2px 12px}
-.msg.agent{background:#f5f4f0;color:var(--text);align-self:flex-start;border-radius:2px 12px 12px 12px;border:1px solid var(--border)}
-.agent-input-area{padding:10px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end}
-#agent-input{flex:1;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:13px;font-family:var(--font);resize:none;min-height:36px;max-height:80px;background:#fff;color:var(--text)}
-#agent-input:focus{outline:none;border-color:#999}
-#agent-send{width:36px;height:36px;border-radius:10px;background:#111;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.suggestions{display:flex;flex-wrap:wrap;gap:4px;padding:0 12px 8px}
-.sug{padding:4px 10px;border-radius:999px;border:1px solid var(--border);font-size:11px;background:#fff;cursor:pointer;font-family:var(--font);color:var(--text2)}
-.sug:hover{background:var(--bg)}
-@media(max-width:600px){#agent-panel{width:calc(100vw - 32px);right:16px}}
+[data-theme="dark"]{
+  --bg:#0d0d11;--bg2:#16161e;--bg3:#1e1e28;--text:#f0f0f0;--text2:#aaa;--text3:#555;
+  --border:#2a2a38;--card:#16161e;--nav-bg:rgba(13,13,17,.95);
+  --how-bg:#111118;--trust-bg:#111118;--pricing-bg:#111118;
+  --mock-outer:#1a1a24;--mock-inner:#0d0d14;--mock-code:#080810;
+  --widget-bg:#1e1e2a;--widget-border:#2a2a3a;
+  --shadow:rgba(0,0,0,.3);
+}
+
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;transition:background .3s,color .3s}
+a{text-decoration:none;color:inherit}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:var(--nav-bg);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);height:60px;display:flex;align-items:center;padding:0 1.5rem;gap:1rem;transition:background .3s,border-color .3s}
+.logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;letter-spacing:-.3px;flex-shrink:0}
+.logo svg{width:26px;height:26px;flex-shrink:0}
+.nav-links{display:flex;gap:1.4rem;flex:1;margin-left:1rem}
+.nav-links a{font-size:14px;color:var(--text2);transition:color .2s;white-space:nowrap}
+.nav-links a:hover{color:var(--text)}
+.nav-right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-shrink:0}
+
+.theme-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--bg2);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.theme-btn:hover{background:var(--bg3)}
+.btn-o{padding:6px 16px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);font-size:13px;cursor:pointer;font-family:inherit;color:var(--text);transition:all .2s;white-space:nowrap}
+.btn-s{padding:6px 16px;border:1px solid var(--text);border-radius:8px;background:var(--text);color:var(--bg);font-size:13px;cursor:pointer;font-family:inherit;transition:all .2s;white-space:nowrap}
+.btn-o:hover{background:var(--bg3)}
+.btn-s:hover{opacity:.82}
+.hamburger{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:4px}
+.hamburger span{width:22px;height:2px;background:var(--text);border-radius:2px;transition:all .3s}
+.mob-menu{display:none;position:fixed;top:60px;left:0;right:0;background:var(--nav-bg);border-bottom:1px solid var(--border);padding:1rem 1.5rem;flex-direction:column;gap:.8rem;z-index:199;backdrop-filter:blur(14px)}
+.mob-menu a{font-size:15px;color:var(--text2);padding:.4rem 0;border-bottom:1px solid var(--border)}
+.mob-menu.open{display:flex}
+.mob-btns{display:flex;gap:8px;padding-top:.5rem}
+.mob-btns button{flex:1}
+
+/* HERO */
+.hero{text-align:center;padding:4.5rem 1.5rem 2rem;max-width:820px;margin:0 auto}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:6px 16px;background:#eeeeff;border-radius:999px;font-size:13px;color:#4f46e5;margin-bottom:1.6rem;border:1px solid #d5d0ff;opacity:0;animation:fu .7s .1s both}
+[data-theme="dark"] .badge{background:#1e1a4a;color:#a5b4fc;border-color:#3730a3}
+.eyebrow{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.7rem;opacity:0;animation:fu .7s .2s both}
+.hero h1{font-size:clamp(2.4rem,7vw,4.8rem);font-weight:800;letter-spacing:-2px;line-height:1.02;margin-bottom:.6rem;opacity:0;animation:fu .7s .3s both}
+.hero-sub{font-size:clamp(1rem,2.5vw,1.3rem);color:var(--text2);margin-bottom:.8rem;opacity:0;animation:fu .7s .4s both}
+.hero-desc{font-size:15px;color:var(--text3);margin-bottom:2rem;max-width:440px;margin-left:auto;margin-right:auto;line-height:1.65;opacity:0;animation:fu .7s .5s both}
+.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:.8rem;opacity:0;animation:fu .7s .6s both}
+.btn-primary{padding:11px 28px;font-size:15px;background:var(--text);color:var(--bg);border:none;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:500;transition:opacity .2s}
+.btn-primary:hover{opacity:.8}
+.btn-ghost{padding:11px 20px;font-size:15px;background:transparent;border:none;cursor:pointer;font-family:inherit;color:var(--text2)}
+.btn-ghost:hover{color:var(--text)}
+.hero-trust{font-size:13px;color:var(--text3);opacity:0;animation:fu .7s .7s both}
+.hero-trust b{color:var(--text2)}
+
+/* MOCK WINDOW — built entirely in CSS, no images */
+.mock-wrap{max-width:960px;margin:2.5rem auto 0;padding:0 1.5rem;opacity:0;animation:fu .9s .8s both}
+.mock-shell{background:var(--mock-outer);border-radius:16px;padding:10px;border:1px solid var(--border);box-shadow:0 32px 80px var(--shadow);transition:background .3s,border-color .3s}
+.mock-bar{background:var(--mock-inner);border-radius:8px 8px 0 0;display:flex;align-items:center;padding:9px 14px;gap:7px;border-bottom:1px solid var(--border)}
+.d{width:10px;height:10px;border-radius:50%}
+.mtabs{display:flex;gap:2px;margin-left:10px}
+.mtab{padding:3px 11px;font-size:11px;border-radius:4px;color:var(--text3);cursor:pointer;font-family:inherit}
+.mtab.on{background:var(--bg2);color:var(--text);border:1px solid var(--border)}
+.mright{margin-left:auto;display:flex;gap:8px;align-items:center}
+.mpub{background:#6c63ff;color:#fff;font-size:11px;padding:3px 12px;border-radius:5px;font-family:inherit;border:none;cursor:pointer}
+.mock-body{display:grid;grid-template-columns:1fr 1fr;min-height:280px;background:var(--border);gap:1px;border-radius:0 0 8px 8px;overflow:hidden}
+.mock-left{background:var(--mock-inner);padding:1.2rem;display:flex;flex-direction:column;gap:8px;transition:background .3s}
+.mock-right{background:var(--mock-code);padding:1.2rem;font-family:'Courier New',monospace;font-size:10.5px;overflow:hidden;transition:background .3s}
+.wgt{background:var(--widget-bg);border:1px solid var(--widget-border);border-radius:8px;padding:9px 11px;transition:background .3s,border-color .3s}
+.wlbl{font-size:9px;color:var(--text3);margin-bottom:3px;font-family:monospace;text-transform:uppercase;letter-spacing:.05em}
+.wval{font-size:18px;font-weight:700}
+.wtrend{font-size:10px;margin-top:1px}
+.wbar{height:4px;background:var(--border);border-radius:2px;margin-top:6px}
+.wfill{height:4px;border-radius:2px}
+.cl{margin-bottom:2px;white-space:nowrap;line-height:1.5}
+.ck{color:#c792ea}.cs{color:#c3e88d}.cn{color:#f78c6c}.cm{color:#546e7a}.cp{color:#89ddff}
+/* Slide show — swaps mock content */
+.slide{display:none;animation:sf .4s ease}
+.slide.on{display:grid;grid-template-columns:1fr 1fr;min-height:280px;background:var(--border);gap:1px;border-radius:0 0 8px 8px;overflow:hidden}
+.sdots{display:flex;justify-content:center;gap:6px;padding:12px 0 14px;background:var(--mock-inner);transition:background .3s}
+.sd{width:6px;height:6px;border-radius:50%;background:var(--border);cursor:pointer;transition:all .3s}
+.sd.on{background:#6c63ff;width:18px;border-radius:3px}
+
+/* TRUSTED */
+.trusted{text-align:center;padding:2rem 1.5rem;background:var(--trust-bg);border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-top:3rem;transition:background .3s,border-color .3s}
+.tlbl{font-size:11px;color:var(--text3);margin-bottom:1rem;letter-spacing:.07em;text-transform:uppercase;font-weight:600}
+.titems{display:flex;justify-content:center;gap:2rem;flex-wrap:wrap}
+.ti{font-size:14px;color:var(--text2);font-weight:500;display:flex;align-items:center;gap:6px}
+
+/* SECTIONS */
+.swrap{max-width:1040px;margin:5rem auto;padding:0 1.5rem}
+.sey{font-size:12px;font-weight:600;color:#6c63ff;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem}
+.sh{font-size:clamp(1.7rem,4vw,2.6rem);font-weight:800;letter-spacing:-.8px;line-height:1.1;margin-bottom:.7rem}
+.sp{font-size:15px;color:var(--text2);max-width:500px;line-height:1.7;margin-bottom:2.5rem}
+
+/* FEATURE CARDS — CSS mock previews, no images */
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:18px}
+.fcard{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:border-color .25s,transform .25s,box-shadow .25s,background .3s}
+.fcard:hover{border-color:#9d97e8;transform:translateY(-3px);box-shadow:0 12px 32px rgba(108,99,255,.1)}
+.fcard-preview{aspect-ratio:16/9;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;padding:1.2rem}
+.fcard-body{padding:1.2rem 1.4rem 1.4rem}
+.fname{font-weight:700;font-size:15px;margin-bottom:.4rem}
+.fdesc{font-size:14px;color:var(--text2);line-height:1.65}
+
+/* Mini UI previews inside feature cards */
+.mini-screen{background:var(--mock-code);border-radius:8px;width:100%;height:100%;display:flex;flex-direction:column;overflow:hidden;font-size:10px;font-family:'Courier New',monospace}
+.mini-bar{background:#0a0a12;padding:6px 10px;display:flex;gap:4px;align-items:center;flex-shrink:0}
+.mini-dot{width:7px;height:7px;border-radius:50%}
+.mini-body{flex:1;padding:10px;display:flex;flex-direction:column;gap:6px}
+.mini-row{display:flex;gap:6px;align-items:center}
+.mini-tag{background:#6c63ff22;border:1px solid #6c63ff44;color:#a5b4fc;font-size:9px;padding:2px 7px;border-radius:4px}
+.mini-model{background:#1e2a1e;border:1px solid #2a3a2a;color:#4ade80;font-size:9px;padding:2px 7px;border-radius:4px}
+.mini-prompt{background:#1e1e2a;border:1px solid var(--widget-border);border-radius:6px;padding:6px 8px;color:#888;font-size:9px;margin-top:4px}
+.mini-metrics{display:grid;grid-template-columns:1fr 1fr;gap:5px;flex:1}
+.mini-metric{background:#1e1e2a;border:1px solid #2a2a3a;border-radius:6px;padding:6px}
+.mini-metric-lbl{font-size:8px;color:#555;margin-bottom:2px}
+.mini-metric-val{font-size:12px;font-weight:700;color:#f0f0f0}
+.mini-metric-t{font-size:8px;color:#4ade80}
+.mini-deploy{display:flex;flex-direction:column;gap:5px;flex:1}
+.mini-platform{background:#1e1e2a;border:1px solid #2a2a3a;border-radius:6px;padding:6px 8px;display:flex;align-items:center;justify-content:space-between}
+.mini-plat-name{font-size:9px;color:#aaa}
+.mini-plat-status{font-size:8px;padding:1px 6px;border-radius:3px}
+.status-live{background:#0f3d28;color:#4ade80}
+.status-build{background:#3a2a08;color:#fbbf24}
+.mini-tree{display:flex;flex-direction:column;gap:4px;flex:1}
+.mini-node{background:#1e1e2a;border:1px solid #2a2a3a;border-radius:5px;padding:5px 8px}
+.mini-node-name{font-size:9px;color:#a5b4fc}
+.mini-node-child{font-size:8px;color:#555;margin-top:1px}
+.mini-menu{background:#1e1e2a;border:1px solid #2a2a3a;border-radius:6px;overflow:hidden;flex:1}
+.mini-menu-item{padding:5px 8px;font-size:9px;color:#aaa;border-bottom:1px solid #2a2a3a;display:flex;align-items:center;gap:5px}
+.mini-menu-item:last-child{border:none}
+.mini-menu-item .dot{width:5px;height:5px;border-radius:50%;background:#6c63ff;flex-shrink:0}
+.mini-devices{display:flex;gap:8px;align-items:flex-end;justify-content:center;padding:8px 0}
+.dev-phone{width:32px;height:56px;background:#1e1e2a;border:2px solid #3a3a4a;border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.dev-tablet{width:56px;height:40px;background:#1e1e2a;border:2px solid #3a3a4a;border-radius:5px;overflow:hidden}
+.dev-laptop{width:72px;height:44px;background:#1e1e2a;border:2px solid #3a3a4a;border-radius:4px;position:relative}
+.dev-screen{width:100%;height:100%;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center}
+.dev-screen-content{width:80%;height:70%;background:#252535;border-radius:2px}
+.dev-stand{width:30px;height:4px;background:#3a3a4a;margin:0 auto;border-radius:0 0 3px 3px}
+
+/* HOW IT WORKS */
+.how{background:var(--how-bg);padding:5rem 1.5rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border);transition:background .3s,border-color .3s}
+.how-inner{max-width:860px;margin:0 auto;text-align:center}
+.how-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-top:2.5rem}
+.hstep{padding:1.5rem}
+.hnum{width:42px;height:42px;border-radius:50%;background:var(--text);color:var(--bg);font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;transition:background .3s,color .3s}
+.hstep h3{font-size:15px;font-weight:700;margin-bottom:.5rem}
+.hstep p{font-size:14px;color:var(--text2);line-height:1.6}
+
+/* TESTIMONIALS */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px;margin-top:2rem}
+.tcard{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.4rem;transition:transform .25s,box-shadow .25s,background .3s,border-color .3s}
+.tcard:hover{transform:translateY(-2px);box-shadow:0 10px 28px var(--shadow)}
+.tstars{color:#f59e0b;font-size:13px;margin-bottom:.8rem;letter-spacing:2px}
+.ttext{font-size:14px;color:var(--text);line-height:1.7;margin-bottom:1.1rem}
+.tauthor{display:flex;align-items:center;gap:10px}
+.tav{width:36px;height:36px;border-radius:50%;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tname{font-size:13px;font-weight:600}
+.trole{font-size:12px;color:var(--text3)}
+
+/* PRICING */
+.pricing-section{background:var(--pricing-bg);padding:5rem 1.5rem;border-top:1px solid var(--border);text-align:center;transition:background .3s,border-color .3s}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-top:2.5rem;text-align:left;max-width:1040px;margin-left:auto;margin-right:auto}
+.pc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.6rem;position:relative;transition:border-color .2s,transform .2s,background .3s}
+.pc:hover{border-color:#9d97e8;transform:translateY(-2px)}
+.pc.pop{background:#111;border-color:#6c63ff}
+[data-theme="dark"] .pc.pop{background:#160f2e;border-color:#6c63ff}
+.pc.pop .pn,.pc.pop .ptag,.pc.pop .pd{color:#888}
+.pc.pop .pp{color:#fff}
+.pc.pop .pp span{color:#666}
+.pc.pop .pf{border-color:#2a2a3a;color:#bbb}
+.pc.pop .ck2{color:#a5b4fc}
+.pc.pop .pbtn-o{background:transparent;border-color:#333;color:#fff}
+.plbl{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#6c63ff;color:#fff;font-size:11px;padding:3px 14px;border-radius:999px;white-space:nowrap;font-weight:600}
+.pn{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.3rem}
+.ptag{font-size:13px;color:var(--text2);margin-bottom:.6rem;font-style:italic}
+.pp{font-size:2.2rem;font-weight:800;letter-spacing:-1.5px;margin-bottom:.3rem}
+.pp span{font-size:14px;font-weight:400;color:var(--text2)}
+.pd{font-size:13px;color:var(--text2);margin-bottom:1.1rem;line-height:1.5}
+.pbtn{width:100%;padding:9px;border-radius:9px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:500;margin-bottom:1.1rem;transition:all .2s}
+.pbtn-s{background:var(--text);color:var(--bg);border:none}
+.pbtn-s:hover{opacity:.8}
+.pbtn-o{background:var(--bg2);border:1px solid var(--border);color:var(--text)}
+.pbtn-o:hover{background:var(--bg3)}
+.pf{font-size:13px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:7px;align-items:flex-start;line-height:1.45}
+.pf:last-child{border:none}
+.ck2{color:#6c63ff;font-weight:700;font-size:13px;flex-shrink:0;margin-top:1px}
+
+/* CTA */
+.cta{background:#111;color:#fff;padding:5rem 1.5rem;text-align:center}
+[data-theme="dark"] .cta{background:#0a0a12;border-top:1px solid #2a2a3a}
+.cta h2{font-size:clamp(1.8rem,5vw,3rem);font-weight:800;letter-spacing:-1px;margin-bottom:1.5rem}
+.cta-btn{padding:12px 32px;background:#fff;color:#111;border:none;border-radius:10px;font-size:15px;font-family:inherit;font-weight:600;cursor:pointer;transition:all .2s}
+.cta-btn:hover{background:#eee;transform:translateY(-1px)}
+
+/* FOOTER */
+footer{background:#08080c;color:#555;padding:3rem 1.5rem;font-size:13px}
+[data-theme="dark"] footer{background:#050508}
+.fi{max-width:1040px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2rem}
+.flogo{color:#fff;font-weight:700;font-size:15px;margin-bottom:.5rem;display:flex;align-items:center;gap:8px}
+.flogo svg{width:22px;height:22px}
+.ftag{font-size:13px;color:#444;line-height:1.6;max-width:200px}
+.fc h4{color:#666;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.9rem}
+.fc a{display:block;color:#444;margin-bottom:.5rem;transition:color .2s}
+.fc a:hover{color:#888}
+.fbot{max-width:1040px;margin:2rem auto 0;padding-top:1.5rem;border-top:1px solid #111;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;font-size:12px;color:#333}
+.fbot a{color:#333;margin-left:1rem}
+.fbot a:hover{color:#666}
+
+/* REVEAL */
+.rv{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+.rv.vis{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+
+@keyframes fu{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sf{from{opacity:0}to{opacity:1}}
+
+@media(max-width:900px){.nav-links{display:none}.hamburger{display:flex}.fi{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){
+  .hero{padding:3rem 1.2rem 1.5rem}
+  .hero h1{letter-spacing:-1.5px}
+  .hero-btns{flex-direction:column;align-items:center}
+  .hero-btns button{width:100%;max-width:300px}
+  .mock-body,.slide.on{grid-template-columns:1fr}
+  .mock-right,.slide-code{display:none}
+  .fgrid,.tgrid,.pgrid,.how-steps{grid-template-columns:1fr}
+  .fi{grid-template-columns:1fr}
+  .btn-o.hm{display:none}
+}
 </style>
 </head>
 <body>
+
 <nav>
   <div class="logo">
-    <div class="logo-icon"><svg viewBox="0 0 14 14"><path d="M2 2h4v4H2zm6 0h4v4H8zM2 8h4v4H2zm6 0h4v4H8z"/></svg></div>
-    <span id="site-name">dreamflow</span>
+    <svg viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="8" fill="#111"/><path d="M20 7L9 20L20 33L31 20Z" fill="white" opacity=".9"/><path d="M20 14L14 20L20 26L26 20Z" fill="#111"/></svg>
+    dreamflow
   </div>
-  <div class="links">
-    <a onclick="scrollSec('features')">Features</a>
-    <a>How it works</a>
-    <a>Enterprise</a>
-    <a>Showcase</a>
-    <a onclick="scrollSec('pricing')">Pricing</a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="https://dreamflow.app/enterprise">Enterprise</a>
+    <a href="https://dreamflow.app/showcase">Showcase</a>
+    <a href="#pricing">Pricing</a>
   </div>
   <div class="nav-right">
-    <button class="btn-outline">Login</button>
-    <button class="btn-solid">Get Started</button>
+    <button class="theme-btn" id="tbtn" onclick="toggleTheme()" title="Toggle dark/light mode">☀️</button>
+    <button class="btn-o hm" onclick="window.location.href='https://app.dreamflow.com/'">Login</button>
+    <button class="btn-s" onclick="window.location.href='https://app.dreamflow.com/'">Get Started</button>
+    <div class="hamburger" id="hbg" onclick="toggleMenu()"><span></span><span></span><span></span></div>
   </div>
 </nav>
-<section id="hero">
-  <div class="badge"><span class="badge-icon">≡≡</span> <span id="badge-text">Introducing Local Run</span></div>
-  <h1 id="hero-title">Canvas↔ Code,<br>seamlessly synced</h1>
-  <p class="subtitle" id="hero-subtitle">Agentic, Visual, Code. No install, no lock-in, production-ready workflows.</p>
-  <div class="hero-btns">
-    <button class="btn-solid" id="hero-cta">Start Building</button>
-    <button class="btn-ghost" id="hero-secondary">Watch Quick Tutorial →</button>
+
+<div class="mob-menu" id="mmenu">
+  <a href="#features" onclick="toggleMenu()">Features</a>
+  <a href="#how" onclick="toggleMenu()">How it works</a>
+  <a href="https://dreamflow.app/enterprise">Enterprise</a>
+  <a href="https://dreamflow.app/showcase">Showcase</a>
+  <a href="#pricing" onclick="toggleMenu()">Pricing</a>
+  <div class="mob-btns">
+    <button class="btn-o" onclick="window.location.href='https://app.dreamflow.com/'">Login</button>
+    <button class="btn-s" onclick="window.location.href='https://app.dreamflow.com/'">Get Started</button>
   </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">✦ Introducing Local Run</div>
+  <p class="eyebrow">Visual AI builder for production mobile apps</p>
+  <h1>Build apps like you're<br>from the future</h1>
+  <p class="hero-sub">Canvas↔ Code, seamlessly synced</p>
+  <p class="hero-desc">Agentic, Visual, Code. No install, no lock-in, production-ready workflows.</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="window.location.href='https://app.dreamflow.com/'">Start Building</button>
+    <button class="btn-ghost" onclick="window.open('https://dreamflowsite.webflow.io/videos/learn-dreamflow-in-3-minutes','_blank')">Watch Quick Tutorial →</button>
+  </div>
+  <p class="hero-trust">From the team behind FlutterFlow · Trusted by <b>2M+ builders</b></p>
 </section>
-<div id="preview-wrap">
+
+<!-- HERO MOCK -->
+<div class="mock-wrap">
   <div class="mock-shell">
     <div class="mock-bar">
-      <div class="mock-dot" style="background:#ff5f57"></div>
-      <div class="mock-dot" style="background:#ffbd2e"></div>
-      <div class="mock-dot" style="background:#27c93f"></div>
-      <div class="mock-tabs">
-        <div class="mock-tab active">Preview</div>
-        <div class="mock-tab">Code</div>
-        <div class="mock-tab">Split</div>
+      <div class="d" style="background:#ff5f57"></div>
+      <div class="d" style="background:#ffbd2e"></div>
+      <div class="d" style="background:#27c93f"></div>
+      <div class="mtabs">
+        <div class="mtab on">Preview</div>
+        <div class="mtab">Code</div>
+        <div class="mtab">Split</div>
       </div>
-      <div style="margin-left:auto;font-size:11px;color:#999;font-family:monospace">dashboard_new</div>
+      <div class="mright">
+        <span style="font-size:11px;color:var(--text3);font-family:monospace">dashboard_new</span>
+        <button class="mpub">Publish</button>
+      </div>
     </div>
-    <div class="mock-body">
-      <div class="mock-canvas">
-        <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:4px">Acme Inc. — Dashboard</div>
-        <div class="mc-widget">
-          <div class="mc-widget-title">Total Revenue</div>
-          <div style="font-size:18px;font-weight:700">$48,291</div>
-          <div class="mc-bar" style="margin-top:6px"></div>
+
+    <!-- Slide 0: Dashboard + Code -->
+    <div class="slide on" id="s0">
+      <div class="mock-left">
+        <div style="font-size:9px;color:var(--text3);font-family:monospace;margin-bottom:2px">Acme Inc. — Dashboard</div>
+        <div class="wgt"><div class="wlbl">Total Revenue</div><div class="wval">$1,250</div><div class="wtrend" style="color:#4ade80">↑ 12.5%</div><div class="wbar"><div class="wfill" style="width:65%;background:linear-gradient(90deg,#6c63ff,#a5b4fc)"></div></div></div>
+        <div class="wgt"><div class="wlbl">Subscriptions</div><div class="wval">+1,350</div><div class="wtrend" style="color:#4ade80">↑ 180.1%</div><div class="wbar"><div class="wfill" style="width:82%;background:linear-gradient(90deg,#1D9E75,#5DCAA5)"></div></div></div>
+        <div class="wgt"><div class="wlbl">Sales</div><div class="wval">+12,234</div><div class="wtrend" style="color:#4ade80">↑ 19%</div><div class="wbar"><div class="wfill" style="width:55%;background:linear-gradient(90deg,#f59e0b,#fcd34d)"></div></div></div>
+        <div class="wgt"><div class="wlbl">Active Now</div><div class="wval">+573</div><div class="wtrend" style="color:#4ade80">↑ 201%</div><div class="wbar"><div class="wfill" style="width:38%;background:linear-gradient(90deg,#ec4899,#f9a8d4)"></div></div></div>
+      </div>
+      <div class="mock-right">
+        <div class="cl"><span class="cm">// chart_card.dart</span></div>
+        <div class="cl"><span class="ck">class</span> <span class="cs">ChartCard</span> <span class="ck">extends</span> <span class="cs">StatelessWidget</span> {</div>
+        <div class="cl">  <span class="ck">final</span> <span class="cp">String</span> title;</div>
+        <div class="cl">  <span class="ck">final</span> <span class="cp">double</span> value;</div>
+        <div class="cl">  <span class="ck">final</span> <span class="cp">Color</span> accent;</div>
+        <div class="cl">&nbsp;</div>
+        <div class="cl">  <span class="cp">@override</span></div>
+        <div class="cl">  <span class="cs">Widget</span> build(<span class="cs">BuildContext</span> ctx) {</div>
+        <div class="cl">    <span class="ck">return</span> <span class="cs">Container</span>(</div>
+        <div class="cl">      decoration: <span class="cs">BoxDecoration</span>(</div>
+        <div class="cl">        borderRadius: <span class="cs">BorderRadius</span></div>
+        <div class="cl">          .circular(<span class="cn">12</span>),</div>
+        <div class="cl">        color: accent.withOpacity(<span class="cn">.12</span>),</div>
+        <div class="cl">      ),</div>
+        <div class="cl">      child: <span class="cs">Column</span>(children: [</div>
+        <div class="cl">        <span class="cs">Text</span>(title),</div>
+        <div class="cl">        <span class="cs">Text</span>(<span class="cn">'$value'</span>),</div>
+        <div class="cl">      ]),</div>
+        <div class="cl">    );</div>
+        <div class="cl">  }</div>
+        <div class="cl">}</div>
+      </div>
+    </div>
+
+    <!-- Slide 1: AI Agent panel -->
+    <div class="slide" id="s1">
+      <div class="mock-left">
+        <div style="font-size:9px;color:var(--text3);font-family:monospace;margin-bottom:4px">Agent — AI Model</div>
+        <div class="wgt" style="margin-bottom:4px">
+          <div class="wlbl">Select model</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">
+            <span style="background:#1e1a4a;border:1px solid #6c63ff;color:#a5b4fc;font-size:9px;padding:2px 7px;border-radius:4px">GPT-5</span>
+            <span style="background:#1e2a1e;border:1px solid #1D9E75;color:#4ade80;font-size:9px;padding:2px 7px;border-radius:4px;font-weight:600">Claude Sonnet 4 ✓</span>
+            <span style="background:#2a1e1e;border:1px solid #555;color:#888;font-size:9px;padding:2px 7px;border-radius:4px">GPT-4o</span>
+            <span style="background:#2a1e1e;border:1px solid #555;color:#888;font-size:9px;padding:2px 7px;border-radius:4px">GPT-5 Mini</span>
+          </div>
         </div>
-        <div class="mc-widget">
-          <div class="mc-widget-title">Subscriptions</div>
-          <div style="font-size:18px;font-weight:700">1,204</div>
-          <div class="mc-bar" style="width:40%;background:linear-gradient(90deg,#1D9E75,#9FE1CB);margin-top:6px"></div>
+        <div class="wgt">
+          <div class="wlbl">Quick prompt</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px;font-style:italic">What would you like to change?</div>
+          <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
+            <span style="background:#6c63ff22;border:1px solid #6c63ff44;color:#a5b4fc;font-size:9px;padding:2px 6px;border-radius:4px">Add chart</span>
+            <span style="background:#6c63ff22;border:1px solid #6c63ff44;color:#a5b4fc;font-size:9px;padding:2px 6px;border-radius:4px">Change color</span>
+            <span style="background:#6c63ff22;border:1px solid #6c63ff44;color:#a5b4fc;font-size:9px;padding:2px 6px;border-radius:4px">Dark mode</span>
+          </div>
         </div>
       </div>
-      <div class="mock-code">
-        <div class="code-line"><span class="cc">// chart_card.dart</span></div>
-        <div class="code-line"><span class="ck">class</span> <span class="cs">ChartCard</span> <span class="cn">extends</span> <span class="cs">Widget</span> {</div>
-        <div class="code-line">  <span class="ck">final</span> blurRadius: <span class="cn">1</span>,</div>
-        <div class="code-line">  offset: <span class="ck">const</span> Offset(<span class="cn">0</span>, <span class="cn">1</span>),</div>
-        <div class="code-line">  contentStyle: FCardContentStyle(</div>
-        <div class="code-line">    <span class="ck">backgroundColor</span>: <span class="cs">Colors.white</span>,</div>
-        <div class="code-line">    borderRadius: <span class="cn">12</span>,</div>
-        <div class="code-line">  ),</div>
-        <div class="code-line">}</div>
+      <div class="mock-right">
+        <div class="cl"><span class="cm">// agent_panel.dart</span></div>
+        <div class="cl"><span class="ck">void</span> addToAgent(<span class="cs">Widget</span> w) {</div>
+        <div class="cl">  agent.context.add(</div>
+        <div class="cl">    <span class="cs">WidgetContext</span>(</div>
+        <div class="cl">      widget: w,</div>
+        <div class="cl">      type: <span class="cs">ContextType</span>.visual,</div>
+        <div class="cl">    )</div>
+        <div class="cl">  );</div>
+        <div class="cl">}</div>
+        <div class="cl">&nbsp;</div>
+        <div class="cl"><span class="ck">enum</span> <span class="cs">AIModel</span> {</div>
+        <div class="cl">  claudeSonnet4,</div>
+        <div class="cl">  gpt5,</div>
+        <div class="cl">  gpt4o,</div>
+        <div class="cl">}</div>
       </div>
+    </div>
+
+    <!-- Slide 2: Multi-device -->
+    <div class="slide" id="s2">
+      <div class="mock-left" style="align-items:center;justify-content:center">
+        <div style="font-size:9px;color:var(--text3);font-family:monospace;margin-bottom:8px;align-self:flex-start">Deploy — All Platforms</div>
+        <div style="display:flex;gap:12px;align-items:flex-end;padding:8px 0">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:36px;height:64px;background:#1e1e2a;border:2px solid #3a3a4a;border-radius:8px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="height:4px;background:#2a2a3a;flex-shrink:0"></div>
+              <div style="flex:1;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center">
+                <div style="width:70%;height:60%;background:#252540;border-radius:2px"></div>
+              </div>
+            </div>
+            <span style="font-size:8px;color:#555">iOS</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:64px;height:48px;background:#1e1e2a;border:2px solid #3a3a4a;border-radius:6px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="height:3px;background:#2a2a3a;flex-shrink:0"></div>
+              <div style="flex:1;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center">
+                <div style="width:75%;height:65%;background:#252540;border-radius:2px"></div>
+              </div>
+            </div>
+            <span style="font-size:8px;color:#555">Android</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <div style="width:84px;height:52px;background:#1e1e2a;border:2px solid #3a3a4a;border-radius:4px;overflow:hidden;display:flex;flex-direction:column">
+              <div style="height:3px;background:#2a2a3a;flex-shrink:0"></div>
+              <div style="flex:1;background:linear-gradient(135deg,#1a1a2e,#16213e);display:flex;align-items:center;justify-content:center">
+                <div style="width:80%;height:70%;background:#252540;border-radius:2px"></div>
+              </div>
+            </div>
+            <div style="width:36px;height:3px;background:#3a3a4a;border-radius:0 0 3px 3px"></div>
+            <span style="font-size:8px;color:#555">Web</span>
+          </div>
+        </div>
+        <div class="wgt" style="width:100%;margin-top:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:10px;color:var(--text2)">One-click deploy</span>
+            <span style="background:#0f3d28;color:#4ade80;font-size:9px;padding:2px 7px;border-radius:4px">Ready</span>
+          </div>
+        </div>
+      </div>
+      <div class="mock-right">
+        <div class="cl"><span class="cm">// deploy_config.yaml</span></div>
+        <div class="cl"><span class="cp">platforms</span>:</div>
+        <div class="cl">  <span class="cs">web</span>:</div>
+        <div class="cl">    <span class="ck">enabled</span>: <span class="cn">true</span></div>
+        <div class="cl">    hosting: dreamflow-cdn</div>
+        <div class="cl">  <span class="cs">ios</span>:</div>
+        <div class="cl">    <span class="ck">enabled</span>: <span class="cn">true</span></div>
+        <div class="cl">    bundle_id: com.app.dream</div>
+        <div class="cl">  <span class="cs">android</span>:</div>
+        <div class="cl">    <span class="ck">enabled</span>: <span class="cn">true</span></div>
+        <div class="cl">    package: com.app.dream</div>
+        <div class="cl">&nbsp;</div>
+        <div class="cl"><span class="cp">build</span>:</div>
+        <div class="cl">  flutter_version: <span class="cn">3.24.0</span></div>
+        <div class="cl">  target: <span class="cs">release</span></div>
+      </div>
+    </div>
+
+    <!-- Slide 3: Widget tree -->
+    <div class="slide" id="s3">
+      <div class="mock-left">
+        <div style="font-size:9px;color:var(--text3);font-family:monospace;margin-bottom:4px">Widget Tree</div>
+        <div class="wgt" style="margin-bottom:4px"><div style="font-size:10px;color:#a5b4fc">📦 Scaffold</div><div style="font-size:9px;color:#555;margin-top:2px;margin-left:8px">└ AppBar → "Dashboard"</div></div>
+        <div class="wgt" style="margin-bottom:4px"><div style="font-size:10px;color:#5DCAA5">📦 Column</div><div style="font-size:9px;color:#555;margin-top:2px;margin-left:8px">├ MetricCard (Revenue)<br>├ MetricCard (Sales)<br>└ ChartWidget</div></div>
+        <div class="wgt" style="background:#1a1030;border-color:#6c63ff44"><div style="font-size:9px;color:#a5b4fc">Right-click menu</div><div style="font-size:8px;color:#555;margin-top:3px">Add to Agent · Prompt Edit<br>Copy · Cut · Go to Code</div></div>
+      </div>
+      <div class="mock-right">
+        <div class="cl"><span class="cm">// widget_tree.dart</span></div>
+        <div class="cl"><span class="ck">class</span> <span class="cs">DashboardPage</span></div>
+        <div class="cl">  <span class="ck">extends</span> <span class="cs">StatefulWidget</span> {</div>
+        <div class="cl">&nbsp;</div>
+        <div class="cl">  <span class="cp">@override</span></div>
+        <div class="cl">  <span class="cs">Widget</span> build(ctx) {</div>
+        <div class="cl">    <span class="ck">return</span> <span class="cs">Scaffold</span>(</div>
+        <div class="cl">      appBar: <span class="cs">AppBar</span>(</div>
+        <div class="cl">        title: <span class="cs">Text</span>(<span class="cn">'Dashboard'</span>),</div>
+        <div class="cl">      ),</div>
+        <div class="cl">      body: <span class="cs">Column</span>(children: [</div>
+        <div class="cl">        <span class="cs">MetricCard</span>(label: <span class="cn">'Revenue'</span>),</div>
+        <div class="cl">        <span class="cs">ChartWidget</span>(),</div>
+        <div class="cl">      ]),</div>
+        <div class="cl">    );</div>
+        <div class="cl">  }</div>
+      </div>
+    </div>
+
+    <div class="sdots">
+      <div class="sd on" onclick="goSlide(0)"></div>
+      <div class="sd" onclick="goSlide(1)"></div>
+      <div class="sd" onclick="goSlide(2)"></div>
+      <div class="sd" onclick="goSlide(3)"></div>
     </div>
   </div>
 </div>
-<section id="features">
-  <div class="section-label">Features</div>
-  <h2 class="section-title" id="features-title">Everything you need to ship faster</h2>
-  <div class="feature-grid" id="feature-grid">
-    <div class="feat-card"><div class="feat-icon" style="background:#eeedfe">🎨</div><div class="feat-title">Visual Canvas</div><div class="feat-desc">Design with drag-and-drop. Every change syncs to real code in real time.</div></div>
-    <div class="feat-card"><div class="feat-icon" style="background:#e1f5ee">⚡</div><div class="feat-title">Agentic Workflows</div><div class="feat-desc">AI agents handle repetitive patterns so your team focuses on user experience.</div></div>
-    <div class="feat-card"><div class="feat-icon" style="background:#faeeda">🔒</div><div class="feat-title">No Lock-in</div><div class="feat-desc">Your code is yours. Export to any framework. No proprietary formats.</div></div>
-    <div class="feat-card"><div class="feat-icon" style="background:#faece7">🚀</div><div class="feat-title">Production Ready</div><div class="feat-desc">Ship directly from the canvas. Built-in CI/CD and one-click publish.</div></div>
-    <div class="feat-card"><div class="feat-icon" style="background:#e6f1fb">🤝</div><div class="feat-title">Team Collaboration</div><div class="feat-desc">Multiplayer editing, comments, and version history — like Figma for code.</div></div>
-    <div class="feat-card"><div class="feat-icon" style="background:#eaf3de">🌐</div><div class="feat-title">Any Framework</div><div class="feat-desc">React, Vue, Flutter, Next.js — Dreamflow outputs idiomatic code.</div></div>
+
+<!-- TRUSTED -->
+<div class="trusted rv">
+  <p class="tlbl">Trusted by builders worldwide</p>
+  <div class="titems">
+    <div class="ti">⭐ 5 Stars on Product Hunt</div>
+    <div class="ti">👥 2M+ Builders</div>
+    <div class="ti">🚀 From the FlutterFlow team</div>
+    <div class="ti">📱 iOS, Android & Web</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="swrap" id="features">
+  <div class="sey rv">Features</div>
+  <h2 class="sh rv">The Fastest Way to Build Real Apps</h2>
+  <p class="sp rv">AI speed, visual clarity, and code-level control in one seamless platform.</p>
+  <div class="fgrid">
+    <div class="fcard rv">
+      <div class="fcard-preview" style="background:#0d0d14">
+        <div style="width:100%;height:100%;display:flex;flex-direction:column;gap:6px;justify-content:center">
+          <div style="display:flex;gap:6px;align-items:center"><div style="flex:1;height:28px;background:#1e1e2a;border:1px solid #2a2a3a;border-radius:5px;display:flex;align-items:center;padding:0 8px"><span style="font-size:9px;color:#a5b4fc">Agentic</span></div><div style="font-size:11px;color:#555">↔</div><div style="flex:1;height:28px;background:#1e1e2a;border:1px solid #1D9E75;border-radius:5px;display:flex;align-items:center;padding:0 8px"><span style="font-size:9px;color:#4ade80">Visual</span></div><div style="font-size:11px;color:#555">↔</div><div style="flex:1;height:28px;background:#1e1e2a;border:1px solid #6c63ff;border-radius:5px;display:flex;align-items:center;padding:0 8px"><span style="font-size:9px;color:#a5b4fc">Code</span></div></div>
+          <div style="height:1px;background:#2a2a3a;margin:2px 0"></div>
+          <div style="display:flex;gap:5px"><div style="flex:1;height:40px;background:#1e2a1e;border-radius:4px"></div><div style="flex:2;height:40px;background:#1a1a2e;border-radius:4px"></div></div>
+        </div>
+      </div>
+      <div class="fcard-body"><div class="fname">Tri-Surface Editing</div><p class="fdesc">Agentic ↔ Visual ↔ Code. Switch seamlessly between AI prompts, canvas, and code — everything stays in sync.</p></div>
+    </div>
+    <div class="fcard rv d1">
+      <div class="fcard-preview" style="background:#0d0d14">
+        <div style="width:90%;display:flex;flex-direction:column;gap:5px">
+          <div style="background:#1e1e2a;border:1px solid #2a2a3a;border-radius:6px;padding:8px">
+            <div style="font-size:9px;color:#555;margin-bottom:4px">What would you like to change?</div>
+            <div style="display:flex;gap:3px;flex-wrap:wrap"><span style="background:#6c63ff22;border:1px solid #6c63ff44;color:#a5b4fc;font-size:8px;padding:2px 5px;border-radius:3px">Dark mode</span><span style="background:#6c63ff22;border:1px solid #6c63ff44;color:#a5b4fc;font-size:8px;padding:2px 5px;border-radius:3px">Add chart</span><span style="background:#6c63ff22;border:1px solid #6c63ff44;color:#a5b4fc;font-size:8px;padding:2px 5px;border-radius:3px">Animate</span></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+            <div style="background:#1e1e2a;border:1px solid #2a2a3a;border-radius:4px;padding:5px"><div style="font-size:8px;color:#555">Revenue</div><div style="font-size:12px;font-weight:700;color:#f0f0f0">$1,250</div><div style="font-size:8px;color:#4ade80">↑ 12.5%</div></div>
+            <div style="background:#1e1e2a;border:1px solid #2a2a3a;border-radius:4px;padding:5px"><div style="font-size:8px;color:#555">Active</div><div style="font-size:12px;font-weight:700;color:#f0f0f0">573</div><div style="font-size:8px;color:#4ade80">↑ 201%</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="fcard-body"><div class="fname">AI-Powered</div><p class="fdesc">Context aware generation. Smart AI that understands patterns and best practices to scaffold features the right way.</p></div>
+    </div>
+    <div class="fcard rv d2">
+      <div class="fcard-preview" style="background:#0d0d14;gap:8px">
+        <div style="display:flex;gap:10px;align-items:flex-end">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><div style="width:28px;height:52px;background:#1e1e2a;border:2px solid #3a3a4a;border-radius:6px;overflow:hidden"><div style="height:3px;background:#2a2a3a"></div><div style="flex:1;background:linear-gradient(135deg,#1a1a2e,#16213e);height:100%;display:flex;align-items:center;justify-content:center"><div style="width:70%;height:60%;background:#252540;border-radius:2px"></div></div></div><span style="font-size:8px;color:#555">iOS</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><div style="width:52px;height:38px;background:#1e1e2a;border:2px solid #3a3a4a;border-radius:5px;overflow:hidden"><div style="flex:1;background:linear-gradient(135deg,#1a1a2e,#16213e);height:100%;display:flex;align-items:center;justify-content:center"><div style="width:75%;height:65%;background:#252540;border-radius:2px"></div></div></div><span style="font-size:8px;color:#555">Tablet</span></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><div style="width:72px;height:44px;background:#1e1e2a;border:2px solid #3a3a4a;border-radius:4px;overflow:hidden"><div style="flex:1;background:linear-gradient(135deg,#1a1a2e,#16213e);height:100%;display:flex;align-items:center;justify-content:center"><div style="width:80%;height:70%;background:#252540;border-radius:2px"></div></div></div><div style="width:30px;height:3px;background:#3a3a4a;border-radius:0 0 3px 3px"></div><span style="font-size:8px;color:#555">Web</span></div>
+        </div>
+      </div>
+      <div class="fcard-body"><div class="fname">Build for Any Screen</div><p class="fdesc">Build robust responsive apps for every device, powered by Flutter. Deploy to App Store, Play Store & Web.</p></div>
+    </div>
+    <div class="fcard rv">
+      <div class="fcard-preview" style="background:#0d0d14;flex-direction:column;gap:5px;padding:1rem">
+        <div style="display:flex;gap:5px;align-items:center;margin-bottom:2px"><span style="font-size:16px">🔥</span><span style="font-size:10px;font-weight:600;color:#f0f0f0">Firebase</span><span style="background:#0f3d28;color:#4ade80;font-size:8px;padding:1px 6px;border-radius:3px;margin-left:auto">Connected</span></div>
+        <div style="background:#1e1e2a;border:1px solid #2a2a3a;border-radius:5px;padding:6px"><div style="font-size:8px;color:#555;margin-bottom:3px">Setup progress</div><div style="height:4px;background:#2a2a3a;border-radius:2px"><div style="width:75%;height:4px;background:#4ade80;border-radius:2px"></div></div><div style="font-size:8px;color:#4ade80;margin-top:2px">75% complete</div></div>
+        <div style="display:flex;gap:5px;align-items:center"><span style="font-size:14px">🐘</span><span style="font-size:10px;font-weight:600;color:#f0f0f0">Supabase</span><span style="background:#0f3d28;color:#4ade80;font-size:8px;padding:1px 6px;border-radius:3px;margin-left:auto">Connected</span></div>
+      </div>
+      <div class="fcard-body"><div class="fname">Backend Integrations</div><p class="fdesc">Firebase or Supabase integration out of the box. Build full-stack apps that scale from day one.</p></div>
+    </div>
+    <div class="fcard rv d1">
+      <div class="fcard-preview" style="background:#0d0d14;flex-direction:column;gap:5px;padding:1rem">
+        <div style="font-size:9px;color:#555;margin-bottom:2px">Start a new project</div>
+        <div style="display:flex;gap:5px">
+          <div style="flex:1;background:#1e1e2a;border:1px solid #6c63ff44;border-radius:5px;padding:7px;text-align:center"><div style="font-size:9px;color:#a5b4fc">+ New Project</div></div>
+          <div style="flex:1;background:#1e1e2a;border:1px solid #2a2a3a;border-radius:5px;padding:7px;text-align:center"><div style="font-size:9px;color:#555">From Template</div></div>
+        </div>
+        <div style="background:#1e1e2a;border:1px solid #2a2a3a;border-radius:5px;padding:6px"><div style="font-size:8px;color:#555;margin-bottom:3px">Start with a prompt...</div><div style="font-size:9px;color:#a5b4fc">Build a meditation app with dark mode</div></div>
+      </div>
+      <div class="fcard-body"><div class="fname">Start from Template</div><p class="fdesc">Kick off any project from a production-ready template or start with a prompt and let AI scaffold everything.</p></div>
+    </div>
+    <div class="fcard rv d2">
+      <div class="fcard-preview" style="background:#0d0d14;flex-direction:column;gap:0;padding:0;overflow:hidden">
+        <div style="background:#0a0a12;padding:4px 8px;font-size:9px;color:#555;font-family:monospace">agent_panel.dart</div>
+        <div style="padding:8px 10px;font-family:'Courier New',monospace;font-size:9px;line-height:1.6">
+          <div><span class="ck">void</span> promptEdit(<span class="cs">Widget</span> w) {</div>
+          <div style="margin-left:8px"><span class="ck">return</span> <span class="cs">AgentPanel</span>(</div>
+          <div style="margin-left:16px">context: w,</div>
+          <div style="margin-left:16px">model: <span class="cs">AIModel</span>.claude,</div>
+          <div style="margin-left:8px">);</div>
+          <div>}</div>
+        </div>
+        <div style="margin:0 8px 8px;background:#1a1030;border:1px solid #6c63ff44;border-radius:5px;padding:5px 8px">
+          <div style="font-size:8px;color:#a5b4fc">✦ Add to Agent · Prompt Edit · Go to Code</div>
+        </div>
+      </div>
+      <div class="fcard-body"><div class="fname">Agent Panel</div><p class="fdesc">Add any widget to the agent context. Prompt edit, copy, wrap or jump to code — all from one right-click menu.</p></div>
+    </div>
   </div>
 </section>
-<section id="pricing">
-  <div class="section-label" style="text-align:center">Pricing</div>
-  <h2 class="section-title" id="pricing-title">Simple, transparent pricing</h2>
-  <div class="pricing-grid" id="pricing-grid">
-    <div class="price-card">
-      <div class="plan-name">Starter</div>
-      <div class="plan-price">$0<span>/mo</span></div>
-      <div class="plan-desc">For personal projects and exploration.</div>
-      <button class="plan-btn outline" style="margin-bottom:1rem">Get started free</button>
-      <div class="plan-feature"><span class="check">✓</span> 3 projects</div>
-      <div class="plan-feature"><span class="check">✓</span> 5GB storage</div>
-      <div class="plan-feature"><span class="check">✓</span> Community support</div>
-    </div>
-    <div class="price-card popular">
-      <div class="popular-badge">Most popular</div>
-      <div class="plan-name">Pro</div>
-      <div class="plan-price">$29<span>/mo</span></div>
-      <div class="plan-desc">For teams shipping production apps.</div>
-      <button class="plan-btn solid" style="margin-bottom:1rem">Start free trial</button>
-      <div class="plan-feature"><span class="check">✓</span> Unlimited projects</div>
-      <div class="plan-feature"><span class="check">✓</span> 50GB storage</div>
-      <div class="plan-feature"><span class="check">✓</span> Priority support</div>
-      <div class="plan-feature"><span class="check">✓</span> Team collaboration</div>
-      <div class="plan-feature"><span class="check">✓</span> Custom domains</div>
-    </div>
-    <div class="price-card">
-      <div class="plan-name">Enterprise</div>
-      <div class="plan-price">Custom</div>
-      <div class="plan-desc">For large teams with advanced needs.</div>
-      <button class="plan-btn outline" style="margin-bottom:1rem">Contact sales</button>
-      <div class="plan-feature"><span class="check">✓</span> Everything in Pro</div>
-      <div class="plan-feature"><span class="check">✓</span> SSO & SAML</div>
-      <div class="plan-feature"><span class="check">✓</span> Dedicated support</div>
-      <div class="plan-feature"><span class="check">✓</span> SLA guarantee</div>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="how-inner">
+    <div class="sey rv">Process</div>
+    <h2 class="sh rv">How it works</h2>
+    <p class="rv" style="font-size:15px;color:var(--text2)">From idea to production in three simple steps</p>
+    <div class="how-steps">
+      <div class="hstep rv"><div class="hnum">1</div><h3>Describe your app</h3><p>Tell us what you want to build in natural language. The AI understands context and gets to work instantly.</p></div>
+      <div class="hstep rv d1"><div class="hnum">2</div><h3>Adjust in canvas or code</h3><p>Ask the agent for changes, fine tune on canvas, or dive into code — always perfectly in sync.</p></div>
+      <div class="hstep rv d2"><div class="hnum">3</div><h3>Ship or export</h3><p>Deploy instantly to any platform or export the full Flutter project and take it anywhere you want.</p></div>
     </div>
   </div>
 </section>
+
+<!-- TESTIMONIALS -->
+<section class="swrap">
+  <div class="sey rv">The new way to build apps</div>
+  <h2 class="sh rv">Loved by builders · ⭐⭐⭐⭐⭐ on Product Hunt</h2>
+  <div class="tgrid">
+    <div class="tcard rv"><div class="tstars">★★★★★</div><p class="ttext">"I'm beyond words at how impressive Dreamflow is. THIS feels like the future. Well done FlutterFlow team. #MindBlown"</p><div class="tauthor"><div class="tav" style="background:#6c63ff">S</div><div><div class="tname">Sam</div><div class="trole">Lead Data Engineer</div></div></div></div>
+    <div class="tcard rv d1"><div class="tstars">★★★★★</div><p class="ttext">"Tools like Dreamflow are game-changers: go from idea to MVP in minutes with AI. No more excuses for not testing your product."</p><div class="tauthor"><div class="tav" style="background:#1D9E75">A</div><div><div class="tname">Alberto</div><div class="trole">Founder</div></div></div></div>
+    <div class="tcard rv d2"><div class="tstars">★★★★★</div><p class="ttext">"The combination of visual development, AI generation and code is the holy trinity of dev. Dreamflow absolutely nailed it."</p><div class="tauthor"><div class="tav" style="background:#f59e0b">C</div><div><div class="tname">Chris</div><div class="trole">Techie</div></div></div></div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<div class="pricing-section" id="pricing">
+  <div style="max-width:1040px;margin:0 auto">
+    <div class="sey rv">Pricing</div>
+    <h2 class="sh rv">Simple, transparent pricing</h2>
+    <p class="rv" style="font-size:15px;color:var(--text2);max-width:400px;margin:0 auto 2.5rem">Start free, upgrade when you need more</p>
+    <div class="pgrid">
+      <div class="pc rv"><div class="pn">Free</div><div class="ptag">Explore Dreamflow</div><div class="pp">$0<span>/month</span></div><p class="pd">Explore Dreamflow and experiment with app ideas</p><button class="pbtn pbtn-o" onclick="window.location.href='https://app.dreamflow.com/'">Get Started</button><div class="pf"><span class="ck2">✓</span> Private projects with visual + code editing</div><div class="pf"><span class="ck2">✓</span> Managed backend integrations</div><div class="pf"><span class="ck2">✓</span> 1-click deployment (Web)</div><div class="pf"><span class="ck2">✓</span> 10 AI credits (starter)</div></div>
+      <div class="pc rv d1"><div class="pn">Hobby</div><div class="ptag">Build & Launch</div><div class="pp">$20<span>/month</span></div><p class="pd">Build and launch a complete application</p><button class="pbtn pbtn-o" onclick="window.location.href='https://app.dreamflow.com/'">Get Started</button><div class="pf"><span class="ck2">✓</span> Everything in Free, plus:</div><div class="pf"><span class="ck2">✓</span> Deploy to Play Store & App Store</div><div class="pf"><span class="ck2">✓</span> Full code export</div><div class="pf"><span class="ck2">✓</span> 100 credits/mo</div></div>
+      <div class="pc pop rv d2"><div class="plbl">Most Popular</div><div class="pn">Pro</div><div class="ptag">Production Workflow</div><div class="pp">$90<span>/month</span></div><p class="pd">Maintain and iterate on a production-ready workflow</p><button class="pbtn pbtn-s" onclick="window.location.href='https://app.dreamflow.com/'">Get Started</button><div class="pf"><span class="ck2">✓</span> Everything in Hobby, plus:</div><div class="pf"><span class="ck2">✓</span> Version control (Git)</div><div class="pf"><span class="ck2">✓</span> Priority access to premium models</div><div class="pf"><span class="ck2">✓</span> 500 credits/mo</div></div>
+      <div class="pc rv d3"><div class="pn">Enterprise</div><div class="ptag">For large teams</div><div class="pp" style="font-size:1.8rem">Custom</div><p class="pd">Core platform for teams with advanced requirements</p><button class="pbtn pbtn-o" onclick="window.location.href='https://dreamflow.app/contact'">Contact Us</button><div class="pf"><span class="ck2">✓</span> Dedicated Support</div><div class="pf"><span class="ck2">✓</span> Advanced Access Control</div><div class="pf"><span class="ck2">✓</span> Bring Your Own AI Models</div><div class="pf"><span class="ck2">✓</span> SLA & Uptime Guarantees</div><div class="pf"><span class="ck2">✓</span> Private Cloud Deployment</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta">
+  <h2>Try Dreamflow now</h2>
+  <button class="cta-btn" onclick="window.location.href='https://app.dreamflow.com/'">Get Started</button>
+</div>
+
+<!-- FOOTER -->
 <footer>
-  <p>© 2026 <span id="footer-name">Dreamflow</span>. All rights reserved. · <a href="#" style="color:var(--text3)">Privacy</a> · <a href="#" style="color:var(--text3)">Terms</a></p>
-</footer>
-<div id="admin-gate">
-  <div class="gate-box">
-    <h3>Admin access</h3>
-    <p>Enter your admin password to unlock the site editor agent.</p>
-    <input class="gate-input" type="password" id="gate-pw" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
-    <div class="gate-err" id="gate-err">Incorrect password. Try again.</div>
-    <div class="gate-btns">
-      <button style="background:#fff;border:1px solid var(--border)" onclick="closeGate()">Cancel</button>
-      <button style="background:#111;color:#fff;border:none" onclick="checkPw()">Unlock</button>
+  <div class="fi">
+    <div>
+      <div class="flogo">
+        <svg viewBox="0 0 40 40" fill="none"><rect width="40" height="40" rx="8" fill="#6c63ff"/><path d="M20 7L9 20L20 33L31 20Z" fill="white" opacity=".9"/><path d="M20 14L14 20L20 26L26 20Z" fill="#6c63ff"/></svg>
+        dreamflow
+      </div>
+      <p class="ftag">Fastest way to build production ready mobile apps</p>
     </div>
+    <div class="fc"><h4>Product</h4><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="https://dreamflow.app/dev">Developers</a></div>
+    <div class="fc"><h4>Resources</h4><a href="https://dreamflow.app/blog">Blog</a><a href="https://docs.dreamflow.com/">Documentation</a><a href="https://dreamflow.app/videos">Videos</a><a href="https://www.reddit.com/r/DreamFlow/">Community</a></div>
+    <div class="fc"><h4>Company</h4><a href="https://dreamflow.app/contact">Contact</a><a href="https://www.flutterflow.io/privacy">Privacy</a><a href="https://www.flutterflow.io/tos">Terms of Service</a></div>
   </div>
-</div>
-<button id="agent-toggle" title="Site Editor Agent">✦</button>
-<div id="agent-panel">
-  <div class="agent-header">
-    <div class="agent-avatar">A</div>
-    <div class="agent-info"><h3>Site Editor Agent</h3><p>Admin mode — edit anything on the site</p></div>
-    <span class="admin-badge">Admin</span>
+  <div class="fbot">
+    <span>© 2025 Dreamflow. All rights reserved.</span>
+    <div><a href="https://www.flutterflow.io/tos">Terms</a><a href="https://www.flutterflow.io/privacy">Privacy</a></div>
   </div>
-  <div id="chat-msgs">
-    <div class="msg agent">Welcome, admin! I can edit any part of this site. What would you like to change?</div>
-  </div>
-  <div class="suggestions" id="suggestions">
-    <button class="sug" onclick="quickSend('Change the hero headline')">Change headline</button>
-    <button class="sug" onclick="quickSend('Update the Pro plan price to $49/mo')">Edit pricing</button>
-    <button class="sug" onclick="quickSend('Add a new feature card about analytics')">Add feature</button>
-    <button class="sug" onclick="quickSend('Switch to a dark color theme')">Dark theme</button>
-  </div>
-  <div class="agent-input-area">
-    <textarea id="agent-input" placeholder="Tell me what to change…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-    <button id="agent-send" onclick="sendMessage()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-    </button>
-  </div>
-</div>
+</footer>
+
 <script>
-const ADMIN_PASSWORD = 'dreamflow2026';
-const API = 'https://api.anthropic.com/v1/messages';
-let panelOpen=false,adminUnlocked=false,history=[];
-let konamiBuffer=[];
-document.addEventListener('keydown',e=>{
-  konamiBuffer.push(e.key);
-  konamiBuffer=konamiBuffer.slice(-6);
-  if(konamiBuffer.join(',')===['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight'].join(','))openGate();
+// THEME
+let dark = localStorage.getItem('df-theme') === 'dark';
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.getElementById('tbtn').textContent = dark ? '🌙' : '☀️';
+}
+function toggleTheme(){ dark = !dark; localStorage.setItem('df-theme', dark ? 'dark' : 'light'); applyTheme(); }
+applyTheme();
+
+// MOBILE MENU
+function toggleMenu(){ document.getElementById('mmenu').classList.toggle('open'); }
+document.addEventListener('click', e => {
+  const m = document.getElementById('mmenu'), b = document.getElementById('hbg');
+  if(m.classList.contains('open') && !m.contains(e.target) && !b.contains(e.target)) m.classList.remove('open');
 });
-let footerClicks=0,footerTimer;
-document.querySelector('footer').addEventListener('click',()=>{
-  footerClicks++;clearTimeout(footerTimer);
-  footerTimer=setTimeout(()=>footerClicks=0,600);
-  if(footerClicks>=3)openGate();
-});
-function openGate(){if(adminUnlocked)return;document.getElementById('admin-gate').classList.add('show');setTimeout(()=>document.getElementById('gate-pw').focus(),100)}
-function closeGate(){document.getElementById('admin-gate').classList.remove('show');document.getElementById('gate-pw').value='';document.getElementById('gate-err').style.display='none'}
-function checkPw(){
-  if(document.getElementById('gate-pw').value===ADMIN_PASSWORD){adminUnlocked=true;closeGate();unlockAdmin();}
-  else{document.getElementById('gate-err').style.display='block';document.getElementById('gate-pw').value='';}
+
+// HERO SLIDESHOW
+let cur=0, total=4, timer;
+function goSlide(n){
+  document.getElementById('s'+cur).classList.remove('on');
+  document.querySelectorAll('.sd')[cur].classList.remove('on');
+  cur=n;
+  document.getElementById('s'+cur).classList.add('on');
+  document.querySelectorAll('.sd')[cur].classList.add('on');
+  clearInterval(timer); timer=setInterval(()=>goSlide((cur+1)%total), 3500);
 }
-function unlockAdmin(){
-  const t=document.getElementById('agent-toggle');t.style.display='flex';panelOpen=true;
-  document.getElementById('agent-panel').classList.add('open');t.textContent='×';
-  t.onclick=()=>{panelOpen=!panelOpen;document.getElementById('agent-panel').classList.toggle('open',panelOpen);t.textContent=panelOpen?'×':'✦'};
-}
-const SYSTEM=`You are a site editor agent for Dreamflow. When asked to change something, reply briefly AND output a JSON block: {"actions":[...]}
-Action types: setText(id,value), setHTML(id,value), setStyle(id,property,value), addFeature(title,desc,emoji,color), theme(value:"dark"/"light")
-IDs: site-name,badge-text,hero-title,hero-subtitle,hero-cta,hero-secondary,features-title,feature-grid,pricing-title,pricing-grid,footer-name`;
-function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px'}
-function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}}
-function quickSend(t){document.getElementById('agent-input').value=t;sendMessage()}
-function addMsg(text,role,thinking=false){
-  const msgs=document.getElementById('chat-msgs');
-  const d=document.createElement('div');d.className='msg '+role+(thinking?' thinking':'');d.textContent=text;
-  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;
-}
-function applyActions(actions){
-  actions.forEach(a=>{
-    if(a.type==='setText'){const el=document.getElementById(a.id);if(el)el.textContent=a.value}
-    else if(a.type==='setHTML'){const el=document.getElementById(a.id);if(el)el.innerHTML=a.value}
-    else if(a.type==='setStyle'){if(a.id==='root')document.documentElement.style.setProperty(a.property,a.value);else{const el=document.getElementById(a.id);if(el)el.style[a.property]=a.value}}
-    else if(a.type==='addFeature'){const g=document.getElementById('feature-grid');const c=document.createElement('div');c.className='feat-card';c.innerHTML=`<div class="feat-icon" style="background:${a.color||'#eeedfe'}">${a.emoji||'✨'}</div><div class="feat-title">${a.title}</div><div class="feat-desc">${a.desc}</div>`;g.appendChild(c)}
-    else if(a.type==='theme'){if(a.value==='dark'){document.documentElement.style.setProperty('--bg','#111');document.documentElement.style.setProperty('--text','#f0f0f0');document.documentElement.style.setProperty('--text2','#aaa');document.documentElement.style.setProperty('--border','#2a2a2a');document.querySelectorAll('.feat-card,.price-card').forEach(el=>{el.style.background='#1a1a1a';el.style.borderColor='#333'});document.querySelector('nav').style.background='#111'}}
+timer=setInterval(()=>goSlide((cur+1)%total), 3500);
+
+// SCROLL REVEAL
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('vis'); obs.unobserve(e.target); }});
+},{threshold:0.08,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+
+// CARD TILT
+document.querySelectorAll('.fcard,.tcard,.pc').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`translateY(-3px) rotateX(${-y*4}deg) rotateY(${x*4}deg)`;
   });
-}
-async function sendMessage(){
-  const input=document.getElementById('agent-input');const text=input.value.trim();if(!text)return;
-  input.value='';input.style.height='auto';document.getElementById('suggestions').style.display='none';
-  addMsg(text,'user');history.push({role:'user',content:text});
-  const thinking=addMsg('Thinking…','agent',true);
-  try{
-    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM,messages:history})});
-    const data=await res.json();const reply=data.content?.[0]?.text||'Sorry, something went wrong.';
-    thinking.remove();
-    const m=reply.match(/\{[\s\S]*?"actions"[\s\S]*?\}/);let display=reply;
-    if(m){display=reply.replace(m[0],'').trim();try{const p=JSON.parse(m[0]);if(p.actions)applyActions(p.actions)}catch(e){}}
-    addMsg(display||'Done!','agent');history.push({role:'assistant',content:reply});
-  }catch(e){thinking.remove();addMsg('Connection error. Please try again.','agent')}
-}
-function scrollSec(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth'})}
-if(new URLSearchParams(location.search).get('admin')==='true')openGate();
+  card.addEventListener('mouseleave',()=>{ card.style.transform=''; });
+});
 </script>
 </body>
 </html>

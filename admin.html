@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dreamflow Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0e0e10;--bg2:#18181b;--bg3:#222226;--text:#f0f0f0;--text2:#aaa;--text3:#666;--border:#2a2a2e;--accent:#6c63ff;--green:#1D9E75;--font:'Inter',system-ui,sans-serif}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+#login{display:flex;flex:1;align-items:center;justify-content:center;padding:2rem}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:2.5rem;max-width:380px;width:100%}
+.login-logo{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;margin-bottom:2rem}
+.login-logo-icon{width:24px;height:24px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.login-logo-icon svg{width:14px;height:14px;fill:#fff}
+.login-box h2{font-size:18px;font-weight:600;margin-bottom:.4rem}
+.login-box p{font-size:13px;color:var(--text2);margin-bottom:1.5rem}
+.field{margin-bottom:12px}
+.field label{font-size:12px;color:var(--text3);display:block;margin-bottom:4px}
+.field input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;font-family:var(--font);color:var(--text)}
+.field input:focus{outline:none;border-color:#555}
+.login-err{font-size:12px;color:#e24b4a;margin-bottom:10px;display:none}
+.btn-full{width:100%;padding:10px;border-radius:8px;font-size:14px;font-family:var(--font);font-weight:500;cursor:pointer;background:var(--accent);color:#fff;border:none}
+.btn-full:hover{background:#5a52d5}
+#app{display:none;flex:1;flex-direction:column;height:100vh}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 1.5rem;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.h-logo{font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}
+.h-logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+.h-badge{font-size:11px;background:#2a1f6e;color:#a5b4fc;padding:2px 8px;border-radius:999px}
+.h-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.status-txt{font-size:12px;color:var(--text2)}
+.h-btn{padding:5px 12px;border-radius:6px;font-size:12px;font-family:var(--font);cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text2)}
+.h-btn:hover{background:var(--bg3);color:var(--text)}
+.workspace{display:flex;flex:1;overflow:hidden}
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sidebar-section{padding:12px 12px 4px;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
+.sidebar-item{display:flex;align-items:center;gap:8px;padding:7px 14px;font-size:13px;color:var(--text2);cursor:pointer;border-radius:6px;margin:0 6px}
+.sidebar-item:hover,.sidebar-item.active{background:var(--bg3);color:var(--text)}
+.sidebar-item .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.history-item{padding:6px 14px;font-size:12px;color:var(--text3);border-left:2px solid transparent;margin-left:6px}
+.history-item .hi-time{font-size:10px;color:var(--text3)}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+#chat-log{flex:1;overflow-y:auto;padding:1.5rem;display:flex;flex-direction:column;gap:12px}
+.msg{display:flex;gap:10px;max-width:820px}
+.msg.user{flex-direction:row-reverse;align-self:flex-end}
+.avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.avatar.a{background:var(--accent);color:#fff}
+.avatar.u{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.bubble{padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.6;max-width:680px}
+.msg.agent .bubble{background:var(--bg2);border:1px solid var(--border);color:var(--text)}
+.msg.user .bubble{background:var(--accent);color:#fff}
+.deploy-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-top:8px;font-size:13px}
+.deploy-card .dc-title{font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.deploy-card .dc-changes{list-style:none;color:var(--text2)}
+.deploy-card .dc-changes li::before{content:"→ ";color:var(--accent)}
+.deploy-status{display:flex;align-items:center;gap:6px;font-size:12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.ds-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+.ds-dot.pending{background:#BA7517;animation:blink 1s ease-in-out infinite}
+.ds-dot.error{background:#e24b4a}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.suggestions{display:flex;flex-wrap:wrap;gap:6px;padding:0 1.5rem 10px}
+.sug{padding:5px 12px;border-radius:999px;border:1px solid var(--border);font-size:12px;background:var(--bg2);cursor:pointer;font-family:var(--font);color:var(--text2)}
+.sug:hover{background:var(--bg3);color:var(--text)}
+.input-bar{background:var(--bg2);border-top:1px solid var(--border);padding:12px 1.5rem;display:flex;gap:10px;align-items:flex-end}
+#msg-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;font-family:var(--font);color:var(--text);resize:none;min-height:42px;max-height:120px;line-height:1.5}
+#msg-input:focus{outline:none;border-color:#555}
+#msg-input::placeholder{color:var(--text3)}
+#send-btn{width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#send-btn:disabled{opacity:.4;cursor:not-allowed}
+.right-panel{width:280px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.rp-header{padding:14px 16px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
+.rp-body{flex:1;overflow-y:auto;padding:12px}
+.rp-section{margin-bottom:1.2rem}
+.rp-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.rp-item{font-size:12px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between}
+.rp-item:last-child{border:none}
+.rp-tag{font-size:11px;padding:1px 7px;border-radius:999px}
+.tag-ok{background:#0f3d28;color:#4ade80}
+.config-field{margin-bottom:8px}
+.config-field label{font-size:11px;color:var(--text3);display:block;margin-bottom:3px}
+.config-field input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-size:12px;font-family:var(--font);color:var(--text)}
+.config-field input:focus{outline:none;border-color:#555}
+.save-cfg{width:100%;padding:7px;border-radius:6px;font-size:12px;font-family:var(--font);cursor:pointer;background:var(--accent);color:#fff;border:none;margin-top:4px}
+.save-cfg:hover{background:#5a52d5}
+@media(max-width:800px){.sidebar,.right-panel{display:none}}
+</style>
+</head>
+<body>
+<div id="login">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-icon"><svg viewBox="0 0 14 14"><path d="M2 2h4v4H2zm6 0h4v4H8zM2 8h4v4H2zm6 0h4v4H8z"/></svg></div>
+      dreamflow admin
+    </div>
+    <h2>Sign in</h2>
+    <p>Admin access only. Not linked from the public site.</p>
+    <div class="field"><label>Admin password</label><input type="password" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()"></div>
+    <div class="login-err" id="login-err">Incorrect password.</div>
+    <button class="btn-full" onclick="login()">Sign in</button>
+  </div>
+</div>
+<div id="app">
+  <header>
+    <div class="h-logo"><div class="h-logo-dot"></div>dreamflow <span class="h-badge">Admin</span></div>
+    <div class="h-right">
+      <div class="status-dot" id="status-dot"></div>
+      <span class="status-txt" id="status-txt">Ready</span>
+      <a id="preview-link" href="#" target="_blank"><button class="h-btn">View live site ↗</button></a>
+      <button class="h-btn" onclick="logout()">Sign out</button>
+    </div>
+  </header>
+  <div class="workspace">
+    <div class="sidebar">
+      <div class="sidebar-section">Sections</div>
+      <div class="sidebar-item active" onclick="quickSend('Show me what I can edit on the site')"><div class="dot" style="background:var(--accent)"></div> All sections</div>
+      <div class="sidebar-item" onclick="quickSend('I want to edit the hero section')"><div class="dot" style="background:#5DCAA5"></div> Hero</div>
+      <div class="sidebar-item" onclick="quickSend('I want to edit the features section')"><div class="dot" style="background:#EF9F27"></div> Features</div>
+      <div class="sidebar-item" onclick="quickSend('I want to edit the pricing plans')"><div class="dot" style="background:#D4537E"></div> Pricing</div>
+      <div class="sidebar-item" onclick="quickSend('I want to edit the navigation and footer')"><div class="dot" style="background:#378ADD"></div> Nav & Footer</div>
+      <div class="sidebar-section" style="margin-top:1rem">Recent edits</div>
+      <div id="history-list"></div>
+    </div>
+    <div class="main">
+      <div id="chat-log">
+        <div class="msg agent">
+          <div class="avatar a">A</div>
+          <div><div class="bubble">Hi! I'm your production site editor. Tell me what to change and I'll deploy it live in ~30 seconds.</div></div>
+        </div>
+      </div>
+      <div class="suggestions" id="suggestions">
+        <button class="sug" onclick="quickSend('Change the hero headline to something catchier')">Edit headline</button>
+        <button class="sug" onclick="quickSend('Update the Pro plan price to $49/mo')">Change pricing</button>
+        <button class="sug" onclick="quickSend('Add a new feature card about AI-powered debugging')">Add feature</button>
+        <button class="sug" onclick="quickSend('Update the badge text to say Introducing AI Mode')">Edit badge</button>
+      </div>
+      <div class="input-bar">
+        <textarea id="msg-input" placeholder="Tell me what to change on the live site…" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button id="send-btn" onclick="sendMsg()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="right-panel">
+      <div class="rp-header">Deployment info</div>
+      <div class="rp-body">
+        <div class="rp-section">
+          <div class="rp-label">Deploy status</div>
+          <div class="rp-item">Last deploy <span class="rp-tag tag-ok" id="rp-status">Ready</span></div>
+          <div class="rp-item">Branch <span style="color:var(--text)">main</span></div>
+          <div class="rp-item">Pages <span class="rp-tag tag-ok">Active</span></div>
+        </div>
+        <div class="rp-section">
+          <div class="rp-label">Configuration</div>
+          <div class="config-field"><label>GitHub token (PAT)</label><input type="password" id="cfg-token" placeholder="ghp_…"></div>
+          <div class="config-field"><label>Repo (owner/name)</label><input type="text" id="cfg-repo" placeholder="you/dreamflow"></div>
+          <div class="config-field"><label>Site URL</label><input type="text" id="cfg-url" placeholder="https://you.github.io/dreamflow"></div>
+          <button class="save-cfg" onclick="saveConfig()">Save config</button>
+        </div>
+        <div class="rp-section">
+          <div class="rp-label">Edit log</div>
+          <div id="edit-log" style="font-size:11px;color:var(--text3)">No edits yet this session.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const ADMIN_PASSWORD = 'dreamflow2026';
+const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
+let cfg={token:'',repo:'',url:''},history=[],editLog=[],sending=false;
+function loadConfig(){try{const s=sessionStorage.getItem('df_cfg');if(s){cfg=JSON.parse(s);applyConfig()}}catch(e){}}
+function applyConfig(){
+  document.getElementById('cfg-token').value=cfg.token||'';
+  document.getElementById('cfg-repo').value=cfg.repo||'';
+  document.getElementById('cfg-url').value=cfg.url||'';
+  if(cfg.url)document.getElementById('preview-link').href=cfg.url;
+}
+function saveConfig(){
+  cfg.token=document.getElementById('cfg-token').value.trim();
+  cfg.repo=document.getElementById('cfg-repo').value.trim();
+  cfg.url=document.getElementById('cfg-url').value.trim();
+  sessionStorage.setItem('df_cfg',JSON.stringify(cfg));
+  if(cfg.url)document.getElementById('preview-link').href=cfg.url;
+  addMsg('agent','Config saved! Ready to deploy edits.');
+}
+function login(){
+  if(document.getElementById('pw-input').value===ADMIN_PASSWORD){
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='flex';
+    loadConfig();
+  }else{document.getElementById('login-err').style.display='block';document.getElementById('pw-input').value='';}
+}
+function logout(){sessionStorage.removeItem('df_cfg');location.reload()}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px'}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}}
+function quickSend(t){document.getElementById('msg-input').value=t;sendMsg()}
+function setStatus(txt,state){
+  document.getElementById('status-txt').textContent=txt;
+  const d=document.getElementById('status-dot');
+  d.style.background=state==='ok'?'#1D9E75':state==='pending'?'#BA7517':'#e24b4a';
+}
+function addMsg(role,text,deployCard){
+  const log=document.getElementById('chat-log');
+  const wrap=document.createElement('div');wrap.className='msg '+role;
+  const av=document.createElement('div');av.className='avatar '+(role==='agent'?'a':'u');av.textContent=role==='agent'?'A':'You';
+  const inner=document.createElement('div');
+  const bub=document.createElement('div');bub.className='bubble';bub.textContent=text;
+  inner.appendChild(bub);
+  if(deployCard)inner.appendChild(buildDeployCard(deployCard));
+  wrap.appendChild(av);wrap.appendChild(inner);log.appendChild(wrap);log.scrollTop=log.scrollHeight;return wrap;
+}
+function buildDeployCard(info){
+  const card=document.createElement('div');card.className='deploy-card';
+  card.innerHTML=`<div class="dc-title"><div class="ds-dot ${info.status==='deploying'?'pending':info.status==='error'?'error':''}"></div>${info.title}</div>`+
+    (info.changes?`<ul class="dc-changes">${info.changes.map(c=>`<li>${c}</li>`).join('')}</ul>`:'')+
+    `<div class="deploy-status"><div class="ds-dot ${info.status==='deploying'?'pending':info.status==='error'?'error':''}" id="ds-${info.id}"></div><span id="ds-txt-${info.id}">${info.statusText}</span></div>`;
+  return card;
+}
+function updateDeployCard(id,status,text){
+  const dot=document.getElementById('ds-'+id);const txt=document.getElementById('ds-txt-'+id);
+  if(dot)dot.className='ds-dot '+(status==='deploying'?'pending':status==='error'?'error':'');
+  if(txt)txt.textContent=text;
+}
+function addHistory(summary){
+  const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  editLog.unshift({summary,time:now});
+  document.getElementById('history-list').innerHTML=editLog.slice(0,8).map(e=>`<div class="history-item"><div style="color:var(--text2)">${e.summary}</div><div class="hi-time">${e.time}</div></div>`).join('');
+  document.getElementById('edit-log').innerHTML=editLog.slice(0,5).map(e=>`<div style="padding:3px 0;border-bottom:1px solid var(--border)">${e.summary} <span style="float:right">${e.time}</span></div>`).join('')||'No edits yet.';
+}
+async function deployPatch(patch,cardId){
+  if(!cfg.token||!cfg.repo){updateDeployCard(cardId,'error','Missing config — fill in token and repo on the right.');return;}
+  const[owner,repo]=cfg.repo.split('/');
+  try{
+    const res=await fetch(`https://api.github.com/repos/${owner}/${repo}/dispatches`,{
+      method:'POST',
+      headers:{'Authorization':`Bearer ${cfg.token}`,'Accept':'application/vnd.github+json','Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'},
+      body:JSON.stringify({event_type:'update-site',client_payload:{patch}})
+    });
+    if(res.status===204){updateDeployCard(cardId,'done','Deployed ✓ — live in ~30 seconds');setStatus('Deployed','ok');}
+    else{const err=await res.json().catch(()=>({}));updateDeployCard(cardId,'error',`GitHub error ${res.status}: ${err.message||'check token & repo'}`);setStatus('Deploy failed','error');}
+  }catch(e){updateDeployCard(cardId,'error','Network error: '+e.message);setStatus('Error','error');}
+}
+const SYSTEM=`You are a production site editor for Dreamflow. When the admin asks to change something:
+1. Reply with a short friendly confirmation.
+2. Output a JSON patch block: {"patch":[{"find":"exact text in HTML","replace":"new text"}],"summary":"short description","changes":["change 1"]}
+Rules: "find" must be exact substring of the HTML. Keep finds short but unique. Always include summary and changes array.
+Editable IDs: site-name, badge-text, hero-title, hero-subtitle, hero-cta, hero-secondary, features-title, feature-grid(innerHTML), pricing-title, pricing-grid(innerHTML), footer-name`;
+async function sendMsg(){
+  const input=document.getElementById('msg-input');const text=input.value.trim();if(!text||sending)return;
+  input.value='';input.style.height='auto';sending=true;document.getElementById('send-btn').disabled=true;
+  document.getElementById('suggestions').style.display='none';
+  addMsg('user',text);history.push({role:'user',content:text});setStatus('Thinking…','pending');
+  const thinkEl=addMsg('agent','Working on it…');thinkEl.querySelector('.bubble').style.color='var(--text3)';thinkEl.querySelector('.bubble').style.fontStyle='italic';
+  try{
+    const res=await fetch(CLAUDE_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,system:SYSTEM,messages:history})});
+    const data=await res.json();const reply=data.content?.[0]?.text||'Sorry, something went wrong.';
+    thinkEl.remove();
+    const m=reply.match(/\{[\s\S]*?"patch"[\s\S]*?\}/);let displayText=reply,deployCard=null;
+    if(m){
+      displayText=reply.replace(m[0],'').trim()||'Deploying now…';
+      try{
+        const parsed=JSON.parse(m[0]);const cardId=Date.now().toString();
+        deployCard={id:cardId,title:parsed.summary||'Deploying changes',changes:parsed.changes||[],status:'deploying',statusText:'Sending to GitHub…'};
+        addMsg('agent',displayText,deployCard);history.push({role:'assistant',content:reply});
+        setStatus('Deploying…','pending');addHistory(parsed.summary||'Site update');
+        await deployPatch(parsed.patch,cardId);sending=false;document.getElementById('send-btn').disabled=false;return;
+      }catch(e){displayText=reply.replace(m[0],'').trim()+' (Could not parse patch — try again.)';}
+    }
+    addMsg('agent',displayText);history.push({role:'assistant',content:reply});setStatus('Ready','ok');
+  }catch(e){thinkEl.remove();addMsg('agent','Connection error. Please try again.');setStatus('Error','error');}
+  sending=false;document.getElementById('send-btn').disabled=false;
+}
+document.getElementById('pw-input').addEventListener('keydown',e=>{if(e.key==='Enter')login()});
+</script>
+</body>
+</html>

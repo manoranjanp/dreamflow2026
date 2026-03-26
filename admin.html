@@ -168,6 +168,7 @@ header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 1.5
 <script>
 const ADMIN_PASSWORD = 'dreamflow2026';
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_KEY = 'sk-ant-REPLACE-THIS-WITH-YOUR-KEY';
 let cfg={token:'',repo:'',url:''},history=[],editLog=[],sending=false;
 function loadConfig(){try{const s=sessionStorage.getItem('df_cfg');if(s){cfg=JSON.parse(s);applyConfig()}}catch(e){}}
 function applyConfig(){

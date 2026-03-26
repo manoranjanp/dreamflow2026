@@ -1,0 +1,45 @@
+name: Update Site Content
+
+on:
+  repository_dispatch:
+    types: [update-site]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Apply site patch
+        env:
+          PATCH: ${{ toJson(github.event.client_payload.patch) }}
+        run: |
+          node - <<'EOF'
+          const fs = require('fs');
+          const patch = JSON.parse(process.env.PATCH);
+          let html = fs.readFileSync('index.html', 'utf8');
+
+          // Each patch item: { find: "exact string to find", replace: "new string" }
+          for (const { find, replace } of patch) {
+            if (!html.includes(find)) {
+              console.error(`Could not find: ${find.slice(0, 80)}`);
+              process.exit(1);
+            }
+            html = html.replace(find, replace);
+          }
+
+          fs.writeFileSync('index.html', html);
+          console.log(`Applied ${patch.length} patch(es) successfully.`);
+          EOF
+
+      - name: Commit and push
+        run: |
+          git config user.name  "Site Editor Agent"
+          git config user.email "agent@dreamflow.app"
+          git add index.html
+          git commit -m "chore: site update via admin agent [skip ci]"
+          git push
